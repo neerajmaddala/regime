@@ -48,7 +48,7 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
             />
           </div>
           
-          <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
+          <div className="flex flex-wrap gap-2 pb-2 mb-4">
             {categories.map(category => (
               <button
                 key={category.id}
@@ -64,7 +64,7 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
             ))}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
             {filteredExercises.map((exercise, index) => {
               const CategoryIcon = exerciseCategoryIcons[exercise.category];
               
@@ -102,7 +102,7 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
                         {exercise.description}
                       </p>
                       
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                         <div className="flex space-x-3">
                           <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                             <Clock size={16} className="mr-1" />
@@ -114,8 +114,8 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
                           </div>
                         </div>
                         
-                        <button className="flex items-center text-sm font-medium text-regime-green hover:text-regime-green-dark transition-colors">
-                          Start <ChevronRight size={16} />
+                        <button className="flex items-center justify-center text-sm font-medium text-regime-green hover:text-regime-green-dark transition-colors">
+                          Start <ChevronRight size={16} className="ml-1" />
                         </button>
                       </div>
                     </div>
