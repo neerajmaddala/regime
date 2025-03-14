@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useProgressData } from '@/hooks/useProgressData';
 import { toast } from 'sonner';
@@ -10,6 +9,7 @@ import ProfileSetup from '@/components/ProfileSetup';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import Card from '@/components/common/Card';
 import { BarChart, LineChart } from 'recharts';
+import { mockExercises } from '@/lib/data';
 import { 
   Utensils, 
   Dumbbell, 

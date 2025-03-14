@@ -1,11 +1,10 @@
-
 import { 
   Apple, 
   Salad, 
   Coffee, 
   Utensils, 
   Dumbbell, 
-  Running, 
+  ActivitySquare, 
   Heart, 
   Droplet, 
   BrainCircuit
@@ -86,7 +85,6 @@ export interface UserProfile {
   goal: UserGoal;
 }
 
-// Mock data
 export const mockMealItems: MealItem[] = [
   {
     id: '1',
@@ -280,7 +278,7 @@ export const mealTypeIcons = {
 };
 
 export const exerciseCategoryIcons = {
-  cardio: Running,
+  cardio: ActivitySquare,
   strength: Dumbbell,
   flexibility: Heart,
   mind: BrainCircuit
