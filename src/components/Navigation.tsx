@@ -21,10 +21,17 @@ interface NavItem {
   to: string;
 }
 
-const Navigation = () => {
+interface NavigationProps {
+  activeRoute?: string;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ activeRoute }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  
+  // Use the prop if provided, otherwise fallback to the location
+  const currentRoute = activeRoute || location.pathname.substring(1) || 'dashboard';
   
   const navItems: NavItem[] = [
     { label: 'Dashboard', icon: Home, to: '/' },
@@ -70,7 +77,7 @@ const Navigation = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   "flex items-center text-lg font-medium py-3 px-4 rounded-lg transition-colors",
-                  location.pathname === item.to 
+                  (item.to === '/' ? currentRoute === 'dashboard' : item.to.substring(1) === currentRoute)
                     ? "bg-regime-green text-regime-dark" 
                     : "text-white hover:bg-white/10"
                 )}
@@ -90,7 +97,7 @@ const Navigation = () => {
               to={item.to}
               className={cn(
                 "flex flex-col items-center justify-center p-2 flex-1",
-                location.pathname === item.to 
+                (item.to === '/' ? currentRoute === 'dashboard' : item.to.substring(1) === currentRoute)
                   ? "text-regime-green" 
                   : "text-gray-400 hover:text-white"
               )}
@@ -119,7 +126,7 @@ const Navigation = () => {
             to={item.to}
             className={cn(
               "flex items-center text-sm font-medium py-3 px-4 rounded-lg transition-colors mb-2",
-              location.pathname === item.to 
+              (item.to === '/' ? currentRoute === 'dashboard' : item.to.substring(1) === currentRoute)
                 ? "bg-regime-green text-regime-dark" 
                 : "text-white hover:bg-white/10"
             )}
