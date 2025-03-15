@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { UserProfile } from '@/lib/data';
+import { UserProfile, GoalType } from '@/lib/data';
 
 type AuthContextType = {
   user: any | null;
@@ -81,16 +81,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('user_id', userId)
         .single();
 
+      // Ensure gender is one of the allowed values
+      const validGender = profileData.gender as "male" | "female" | "other";
+      const validActivityLevel = profileData.activity_level as "sedentary" | "light" | "moderate" | "active" | "very-active";
+      // Ensure goal type is one of the allowed values
+      const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
+      
       // Combine the data into a UserProfile object
       let userProfile: UserProfile = {
         name: profileData.name || 'User',
         age: profileData.age || 30,
         weight: profileData.weight || 70,
         height: profileData.height || 170,
-        gender: profileData.gender || 'male',
-        activityLevel: profileData.activity_level || 'moderate',
+        gender: validGender || 'male',
+        activityLevel: validActivityLevel || 'moderate',
         goal: {
-          type: goalsData?.type || 'weight-loss',
+          type: validGoalType,
           targetCalories: goalsData?.target_calories || 2000,
           targetProtein: goalsData?.target_protein || 150,
           targetCarbs: goalsData?.target_carbs || 200,

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useProgressData } from '@/hooks/useProgressData';
 import { toast } from 'sonner';
@@ -92,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
         return (
           <div className="max-w-4xl mx-auto py-8">
             <h1 className="text-3xl font-bold mb-6">Profile</h1>
-            <ProfileSetup profile={userProfile} />
+            <ProfileSetup userProfile={userProfile} />
           </div>
         );
       default:
