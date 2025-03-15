@@ -6,10 +6,10 @@ import { Calendar, Plus, ChevronRight, X } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MealPlannerProps {
   meals: Meal[];
@@ -27,6 +27,7 @@ interface AddFoodFormValues {
 const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
   const [currentMeal, setCurrentMeal] = useState<Meal | null>(null);
   const [addFoodDialogOpen, setAddFoodDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const form = useForm<AddFoodFormValues>({
     defaultValues: {
@@ -158,93 +159,87 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
       </AnimatedTransition>
 
       <Dialog open={addFoodDialogOpen} onOpenChange={setAddFoodDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className={`sm:max-w-[425px] ${isMobile ? 'p-4' : ''}`}>
           <DialogHeader>
             <DialogTitle>Add Food to {currentMeal ? mealTypeLabels[currentMeal.type] : 'Meal'}</DialogTitle>
           </DialogHeader>
           
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormItem>
-              <FormLabel>Food Name</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="e.g., Greek Yogurt"
-                  {...form.register('name', { required: true })}
-                />
-              </FormControl>
-            </FormItem>
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">Food Name</label>
+              <Input
+                id="name"
+                placeholder="e.g., Greek Yogurt"
+                {...form.register('name', { required: true })}
+              />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <FormItem>
-                <FormLabel>Calories</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number" 
-                    placeholder="0"
-                    {...form.register('calories', { 
-                      required: true,
-                      valueAsNumber: true 
-                    })}
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <label htmlFor="calories" className="text-sm font-medium">Calories</label>
+                <Input
+                  id="calories"
+                  type="number" 
+                  placeholder="0"
+                  {...form.register('calories', { 
+                    required: true,
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
               
-              <FormItem>
-                <FormLabel>Portion</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="e.g., 1 cup"
-                    {...form.register('portion', { required: true })}
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <label htmlFor="portion" className="text-sm font-medium">Portion</label>
+                <Input
+                  id="portion"
+                  placeholder="e.g., 1 cup"
+                  {...form.register('portion', { required: true })}
+                />
+              </div>
             </div>
             
             <div className="grid grid-cols-3 gap-4">
-              <FormItem>
-                <FormLabel>Protein (g)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number" 
-                    placeholder="0"
-                    {...form.register('protein', { 
-                      required: true,
-                      valueAsNumber: true 
-                    })}
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <label htmlFor="protein" className="text-sm font-medium">Protein (g)</label>
+                <Input
+                  id="protein"
+                  type="number" 
+                  placeholder="0"
+                  {...form.register('protein', { 
+                    required: true,
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
               
-              <FormItem>
-                <FormLabel>Carbs (g)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number" 
-                    placeholder="0"
-                    {...form.register('carbs', { 
-                      required: true,
-                      valueAsNumber: true 
-                    })}
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <label htmlFor="carbs" className="text-sm font-medium">Carbs (g)</label>
+                <Input
+                  id="carbs"
+                  type="number" 
+                  placeholder="0"
+                  {...form.register('carbs', { 
+                    required: true,
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
               
-              <FormItem>
-                <FormLabel>Fat (g)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number" 
-                    placeholder="0"
-                    {...form.register('fat', { 
-                      required: true,
-                      valueAsNumber: true 
-                    })}
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <label htmlFor="fat" className="text-sm font-medium">Fat (g)</label>
+                <Input
+                  id="fat"
+                  type="number" 
+                  placeholder="0"
+                  {...form.register('fat', { 
+                    required: true,
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
             </div>
             
-            <DialogFooter>
+            <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setAddFoodDialogOpen(false)}>
                 Cancel
               </Button>
