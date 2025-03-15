@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import { UserProfile } from '@/lib/data';
 import { User, Target, BarChart3, Weight, Ruler } from 'lucide-react';
@@ -15,10 +15,13 @@ interface ProfileSetupProps {
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
   const { profile, refreshProfile } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [localProfile, setLocalProfile] = useState<UserProfile | null>(null);
   const isMobile = useIsMobile();
 
   // Use the passed userProfile prop if available, otherwise use the profile from auth context
-  const displayProfile = userProfile || profile;
+  useEffect(() => {
+    setLocalProfile(userProfile || profile);
+  }, [userProfile, profile]);
 
   const handleEditClose = async () => {
     setEditModalOpen(false);
@@ -26,7 +29,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
     await refreshProfile();
   };
 
-  if (!displayProfile) {
+  if (!localProfile) {
     return (
       <AnimatedTransition type="slide-up" delay={300}>
         <Card variant="glass" className="p-6 text-center">
@@ -47,31 +50,31 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
           
           <div className={`mt-4 flex ${isMobile ? 'flex-col' : 'flex-row'} items-center`}>
             <div className="w-24 h-24 rounded-full bg-regime-green/20 flex items-center justify-center text-regime-green-dark border-4 border-white dark:border-regime-dark-light shadow-md">
-              <span className="text-3xl font-bold">{displayProfile.name.charAt(0)}</span>
+              <span className="text-3xl font-bold">{localProfile.name.charAt(0)}</span>
             </div>
             
             <div className={`${isMobile ? 'mt-4 text-center w-full' : 'mt-0 ml-6 text-left'}`}>
-              <h4 className="text-xl font-bold">{displayProfile.name}</h4>
+              <h4 className="text-xl font-bold">{localProfile.name}</h4>
               <p className="text-gray-600 dark:text-gray-400">
-                {displayProfile.age} years, {displayProfile.gender}
+                {localProfile.age} years, {localProfile.gender}
               </p>
               <div className={`mt-2 flex ${isMobile ? 'flex-col gap-2' : 'flex-row gap-4'}`}>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'}`}>
                   <Weight size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {displayProfile.weight} kg
+                    {localProfile.weight} kg
                   </span>
                 </div>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'}`}>
                   <Ruler size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {displayProfile.height} cm
+                    {localProfile.height} cm
                   </span>
                 </div>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'} capitalize`}>
                   <BarChart3 size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {displayProfile.activityLevel} activity
+                    {localProfile.activityLevel} activity
                   </span>
                 </div>
               </div>
@@ -87,9 +90,9 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
             <div className={`mt-4 grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-3 gap-4'}`}>
               <div className="bg-white dark:bg-regime-dark-light rounded-xl p-4 border border-gray-100 dark:border-gray-800">
                 <h5 className="text-sm text-gray-600 dark:text-gray-400 mb-1">Daily Calories</h5>
-                <p className="text-2xl font-bold">{displayProfile.goal.targetCalories}</p>
+                <p className="text-2xl font-bold">{localProfile.goal.targetCalories}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 capitalize">
-                  Goal: {displayProfile.goal.type.replace('-', ' ')}
+                  Goal: {localProfile.goal.type.replace('-', ' ')}
                 </p>
               </div>
               
@@ -98,15 +101,15 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Protein</span>
-                    <span className="font-medium">{displayProfile.goal.targetProtein}g</span>
+                    <span className="font-medium">{localProfile.goal.targetProtein}g</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Carbs</span>
-                    <span className="font-medium">{displayProfile.goal.targetCarbs}g</span>
+                    <span className="font-medium">{localProfile.goal.targetCarbs}g</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Fat</span>
-                    <span className="font-medium">{displayProfile.goal.targetFat}g</span>
+                    <span className="font-medium">{localProfile.goal.targetFat}g</span>
                   </div>
                 </div>
               </div>
@@ -116,11 +119,11 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Water</span>
-                    <span className="font-medium">{displayProfile.goal.targetWater}ml</span>
+                    <span className="font-medium">{localProfile.goal.targetWater}ml</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Exercise</span>
-                    <span className="font-medium">{displayProfile.goal.targetExerciseDuration} min/day</span>
+                    <span className="font-medium">{localProfile.goal.targetExerciseDuration} min/day</span>
                   </div>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -24,7 +25,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (profile) {
+    if (profile && open) {
       setFormData({ ...profile });
     }
   }, [profile, open]);
@@ -126,7 +127,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
 
       if (goalError) throw goalError;
 
-      // Refresh the profile data immediately after successful update
+      // Ensure the profile is refreshed from the database
       await refreshProfile();
       
       toast({

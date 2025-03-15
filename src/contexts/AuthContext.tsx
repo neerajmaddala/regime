@@ -65,6 +65,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Clear any previous state to avoid stale data
+      setLoading(true);
+      
       // First, get the profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -81,9 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('user_id', userId)
         .single();
 
+      if (goalsError && goalsError.code !== 'PGRST116') throw goalsError;
+
       // Ensure gender is one of the allowed values
-      const validGender = profileData.gender as "male" | "female" | "other";
-      const validActivityLevel = profileData.activity_level as "sedentary" | "light" | "moderate" | "active" | "very-active";
+      const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
+      const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
       // Ensure goal type is one of the allowed values
       const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
       
@@ -93,8 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         age: profileData.age || 30,
         weight: profileData.weight || 70,
         height: profileData.height || 170,
-        gender: validGender || 'male',
-        activityLevel: validActivityLevel || 'moderate',
+        gender: validGender,
+        activityLevel: validActivityLevel,
         goal: {
           type: validGoalType,
           targetCalories: goalsData?.target_calories || 2000,
@@ -130,6 +135,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       
       setProfile(defaultProfile);
+    } finally {
+      setLoading(false);
     }
   };
 
