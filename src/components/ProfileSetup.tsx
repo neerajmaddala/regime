@@ -8,12 +8,19 @@ import ProfileEdit from '@/components/ProfileEdit';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const ProfileSetup: React.FC = () => {
+interface ProfileSetupProps {
+  userProfile?: UserProfile;
+}
+
+const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
   const { profile } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  if (!profile) {
+  // Use the passed userProfile prop if available, otherwise use the profile from auth context
+  const displayProfile = userProfile || profile;
+
+  if (!displayProfile) {
     return (
       <AnimatedTransition type="slide-up" delay={300}>
         <Card variant="glass" className="p-6 text-center">
@@ -34,31 +41,31 @@ const ProfileSetup: React.FC = () => {
           
           <div className={`mt-4 flex ${isMobile ? 'flex-col' : 'flex-row'} items-center`}>
             <div className="w-24 h-24 rounded-full bg-regime-green/20 flex items-center justify-center text-regime-green-dark border-4 border-white dark:border-regime-dark-light shadow-md">
-              <span className="text-3xl font-bold">{profile.name.charAt(0)}</span>
+              <span className="text-3xl font-bold">{displayProfile.name.charAt(0)}</span>
             </div>
             
             <div className={`mt-4 ${isMobile ? 'mt-4 text-center' : 'mt-0 ml-6 text-left'}`}>
-              <h4 className="text-xl font-bold">{profile.name}</h4>
+              <h4 className="text-xl font-bold">{displayProfile.name}</h4>
               <p className="text-gray-600 dark:text-gray-400">
-                {profile.age} years, {profile.gender}
+                {displayProfile.age} years, {displayProfile.gender}
               </p>
               <div className={`mt-2 flex ${isMobile ? 'flex-col gap-2' : 'flex-row gap-4'}`}>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'}`}>
                   <Weight size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {profile.weight} kg
+                    {displayProfile.weight} kg
                   </span>
                 </div>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'}`}>
                   <Ruler size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {profile.height} cm
+                    {displayProfile.height} cm
                   </span>
                 </div>
                 <div className={`flex items-center ${isMobile ? 'justify-center' : 'justify-start'} capitalize`}>
                   <BarChart3 size={16} className="text-gray-500 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {profile.activityLevel} activity
+                    {displayProfile.activityLevel} activity
                   </span>
                 </div>
               </div>
@@ -74,9 +81,9 @@ const ProfileSetup: React.FC = () => {
             <div className={`mt-4 grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-3 gap-4'}`}>
               <div className="bg-white dark:bg-regime-dark-light rounded-xl p-4 border border-gray-100 dark:border-gray-800">
                 <h5 className="text-sm text-gray-600 dark:text-gray-400 mb-1">Daily Calories</h5>
-                <p className="text-2xl font-bold">{profile.goal.targetCalories}</p>
+                <p className="text-2xl font-bold">{displayProfile.goal.targetCalories}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 capitalize">
-                  Goal: {profile.goal.type.replace('-', ' ')}
+                  Goal: {displayProfile.goal.type.replace('-', ' ')}
                 </p>
               </div>
               
@@ -85,15 +92,15 @@ const ProfileSetup: React.FC = () => {
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Protein</span>
-                    <span className="font-medium">{profile.goal.targetProtein}g</span>
+                    <span className="font-medium">{displayProfile.goal.targetProtein}g</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Carbs</span>
-                    <span className="font-medium">{profile.goal.targetCarbs}g</span>
+                    <span className="font-medium">{displayProfile.goal.targetCarbs}g</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Fat</span>
-                    <span className="font-medium">{profile.goal.targetFat}g</span>
+                    <span className="font-medium">{displayProfile.goal.targetFat}g</span>
                   </div>
                 </div>
               </div>
@@ -103,11 +110,11 @@ const ProfileSetup: React.FC = () => {
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Water</span>
-                    <span className="font-medium">{profile.goal.targetWater}ml</span>
+                    <span className="font-medium">{displayProfile.goal.targetWater}ml</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Exercise</span>
-                    <span className="font-medium">{profile.goal.targetExerciseDuration} min/day</span>
+                    <span className="font-medium">{displayProfile.goal.targetExerciseDuration} min/day</span>
                   </div>
                 </div>
               </div>
