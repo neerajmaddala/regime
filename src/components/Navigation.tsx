@@ -11,9 +11,11 @@ import {
   Droplet, 
   User,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   label: string;
@@ -29,6 +31,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeRoute }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { signOut, user } = useAuth();
   
   // Use the prop if provided, otherwise fallback to the location
   const currentRoute = activeRoute || location.pathname.substring(1) || 'dashboard';
@@ -44,6 +47,11 @@ const Navigation: React.FC<NavigationProps> = ({ activeRoute }) => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    setMobileMenuOpen(false);
   };
 
   if (isMobile) {
@@ -86,6 +94,16 @@ const Navigation: React.FC<NavigationProps> = ({ activeRoute }) => {
                 {item.label}
               </Link>
             ))}
+            
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="flex items-center text-lg font-medium py-3 px-4 rounded-lg transition-colors text-white hover:bg-white/10 w-full text-left"
+              >
+                <LogOut size={20} className="mr-3" />
+                Logout
+              </button>
+            )}
           </nav>
         </div>
         
@@ -137,10 +155,20 @@ const Navigation: React.FC<NavigationProps> = ({ activeRoute }) => {
         ))}
       </nav>
       <div className="absolute bottom-0 left-0 right-0 p-6">
-        <div className="p-4 rounded-lg bg-white/10">
-          <p className="text-sm text-white/80">Connect your fitness device for enhanced tracking</p>
-          <button className="mt-3 w-full btn-regime text-sm py-2">Connect Device</button>
-        </div>
+        {user ? (
+          <button
+            onClick={handleLogout}
+            className="p-4 rounded-lg bg-white/10 w-full flex items-center justify-center transition-colors hover:bg-white/20"
+          >
+            <LogOut size={18} className="mr-2" />
+            <span className="text-sm">Logout</span>
+          </button>
+        ) : (
+          <div className="p-4 rounded-lg bg-white/10">
+            <p className="text-sm text-white/80">Connect your fitness device for enhanced tracking</p>
+            <button className="mt-3 w-full btn-regime text-sm py-2">Connect Device</button>
+          </div>
+        )}
       </div>
     </aside>
   );

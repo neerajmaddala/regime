@@ -9,7 +9,92 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          created_at: string
+          gender: string | null
+          height: number | null
+          id: string
+          name: string | null
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          height?: number | null
+          id: string
+          name?: string | null
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      user_goals: {
+        Row: {
+          created_at: string
+          id: string
+          target_calories: number | null
+          target_carbs: number | null
+          target_exercise_duration: number | null
+          target_fat: number | null
+          target_protein: number | null
+          target_water: number | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_calories?: number | null
+          target_carbs?: number | null
+          target_exercise_duration?: number | null
+          target_fat?: number | null
+          target_protein?: number | null
+          target_water?: number | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_calories?: number | null
+          target_carbs?: number | null
+          target_exercise_duration?: number | null
+          target_fat?: number | null
+          target_protein?: number | null
+          target_water?: number | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
