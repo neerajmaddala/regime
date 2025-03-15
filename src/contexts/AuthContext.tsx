@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       // Clear any previous state to avoid stale data
       setLoading(true);
       
@@ -75,7 +76,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', userId)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw profileError;
+      }
 
       // Then, get the goals data
       const { data: goalsData, error: goalsError } = await supabase
@@ -84,7 +88,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('user_id', userId)
         .single();
 
-      if (goalsError && goalsError.code !== 'PGRST116') throw goalsError;
+      if (goalsError && goalsError.code !== 'PGRST116') {
+        console.error('Goals fetch error:', goalsError);
+        throw goalsError;
+      }
+
+      console.log('Profile data fetched:', profileData);
+      console.log('Goals data fetched:', goalsData);
 
       // Ensure gender is one of the allowed values
       const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
@@ -112,6 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       setProfile(userProfile);
+      console.log('Profile set to:', userProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
       
@@ -141,7 +152,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const refreshProfile = async () => {
+    console.log('Refreshing profile requested');
     if (user) {
+      console.log('Refreshing profile for user:', user.id);
       await fetchProfile(user.id);
     }
   };

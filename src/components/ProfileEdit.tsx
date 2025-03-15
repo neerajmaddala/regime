@@ -26,6 +26,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
 
   useEffect(() => {
     if (profile && open) {
+      console.log("Setting form data to current profile:", profile);
       setFormData({ ...profile });
     }
   }, [profile, open]);
@@ -136,7 +137,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
       });
       
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
         title: "Error",
@@ -148,11 +149,12 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
     }
   };
 
-  const modalContent = (
+  // Common form content to avoid duplication
+  const formContent = (
     <form onSubmit={handleSubmit} className="space-y-6 mt-6">
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Personal Information</h3>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -265,7 +267,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
           </Select>
         </div>
         
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="targetCalories">Daily Calories</Label>
             <Input
@@ -363,6 +365,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
     </form>
   );
 
+  // Return either mobile sheet or desktop dialog based on device
   return isMobile ? (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="overflow-y-auto">
@@ -372,218 +375,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
             Update your personal information and fitness goals
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Personal Information</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleSelectChange(value, 'gender')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleChange}
-                  min={1}
-                  max={120}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  name="weight"
-                  type="number"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  min={20}
-                  max={300}
-                  step={0.1}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
-                <Input
-                  id="height"
-                  name="height"
-                  type="number"
-                  value={formData.height}
-                  onChange={handleChange}
-                  min={50}
-                  max={250}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activityLevel">Activity Level</Label>
-                <Select
-                  value={formData.activityLevel}
-                  onValueChange={(value) => handleSelectChange(value, 'activityLevel')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select activity level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sedentary">Sedentary</SelectItem>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="very-active">Very Active</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Your Goals</h3>
-            <div className="space-y-2">
-              <Label htmlFor="goalType">Goal Type</Label>
-              <Select
-                value={formData.goal.type}
-                onValueChange={(value) => handleSelectChange(value, 'goalType')}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select goal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weight-loss">Weight Loss</SelectItem>
-                  <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="health">Overall Health</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="targetCalories">Daily Calories</Label>
-                <Input
-                  id="targetCalories"
-                  name="targetCalories"
-                  type="number"
-                  value={formData.goal.targetCalories}
-                  onChange={handleGoalChange}
-                  min={500}
-                  max={5000}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetProtein">Protein (g)</Label>
-                <Input
-                  id="targetProtein"
-                  name="targetProtein"
-                  type="number"
-                  value={formData.goal.targetProtein}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={400}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetCarbs">Carbs (g)</Label>
-                <Input
-                  id="targetCarbs"
-                  name="targetCarbs"
-                  type="number"
-                  value={formData.goal.targetCarbs}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={600}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetFat">Fat (g)</Label>
-                <Input
-                  id="targetFat"
-                  name="targetFat"
-                  type="number"
-                  value={formData.goal.targetFat}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={200}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetWater">Water (ml)</Label>
-                <Input
-                  id="targetWater"
-                  name="targetWater"
-                  type="number"
-                  value={formData.goal.targetWater}
-                  onChange={handleGoalChange}
-                  min={500}
-                  max={5000}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetExerciseDuration">Exercise (min/day)</Label>
-                <Input
-                  id="targetExerciseDuration"
-                  name="targetExerciseDuration"
-                  type="number"
-                  value={formData.goal.targetExerciseDuration}
-                  onChange={handleGoalChange}
-                  min={0}
-                  max={240}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-regime-green text-white" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </form>
+        {formContent}
       </SheetContent>
     </Sheet>
   ) : (
@@ -595,218 +387,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
             Update your personal information and fitness goals
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Personal Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleSelectChange(value, 'gender')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleChange}
-                  min={1}
-                  max={120}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  name="weight"
-                  type="number"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  min={20}
-                  max={300}
-                  step={0.1}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
-                <Input
-                  id="height"
-                  name="height"
-                  type="number"
-                  value={formData.height}
-                  onChange={handleChange}
-                  min={50}
-                  max={250}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activityLevel">Activity Level</Label>
-                <Select
-                  value={formData.activityLevel}
-                  onValueChange={(value) => handleSelectChange(value, 'activityLevel')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select activity level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sedentary">Sedentary</SelectItem>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="very-active">Very Active</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Your Goals</h3>
-            <div className="space-y-2">
-              <Label htmlFor="goalType">Goal Type</Label>
-              <Select
-                value={formData.goal.type}
-                onValueChange={(value) => handleSelectChange(value, 'goalType')}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select goal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weight-loss">Weight Loss</SelectItem>
-                  <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="health">Overall Health</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="targetCalories">Daily Calories</Label>
-                <Input
-                  id="targetCalories"
-                  name="targetCalories"
-                  type="number"
-                  value={formData.goal.targetCalories}
-                  onChange={handleGoalChange}
-                  min={500}
-                  max={5000}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetProtein">Protein (g)</Label>
-                <Input
-                  id="targetProtein"
-                  name="targetProtein"
-                  type="number"
-                  value={formData.goal.targetProtein}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={400}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetCarbs">Carbs (g)</Label>
-                <Input
-                  id="targetCarbs"
-                  name="targetCarbs"
-                  type="number"
-                  value={formData.goal.targetCarbs}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={600}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetFat">Fat (g)</Label>
-                <Input
-                  id="targetFat"
-                  name="targetFat"
-                  type="number"
-                  value={formData.goal.targetFat}
-                  onChange={handleGoalChange}
-                  min={10}
-                  max={200}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetWater">Water (ml)</Label>
-                <Input
-                  id="targetWater"
-                  name="targetWater"
-                  type="number"
-                  value={formData.goal.targetWater}
-                  onChange={handleGoalChange}
-                  min={500}
-                  max={5000}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="targetExerciseDuration">Exercise (min/day)</Label>
-                <Input
-                  id="targetExerciseDuration"
-                  name="targetExerciseDuration"
-                  type="number"
-                  value={formData.goal.targetExerciseDuration}
-                  onChange={handleGoalChange}
-                  min={0}
-                  max={240}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-regime-green text-white" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </form>
+        {formContent}
       </DialogContent>
     </Dialog>
   );
