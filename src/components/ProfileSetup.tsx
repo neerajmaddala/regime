@@ -13,12 +13,18 @@ interface ProfileSetupProps {
 }
 
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   // Use the passed userProfile prop if available, otherwise use the profile from auth context
   const displayProfile = userProfile || profile;
+
+  const handleEditClose = async () => {
+    setEditModalOpen(false);
+    // Refresh the profile data after the modal is closed
+    await refreshProfile();
+  };
 
   if (!displayProfile) {
     return (
@@ -44,7 +50,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
               <span className="text-3xl font-bold">{displayProfile.name.charAt(0)}</span>
             </div>
             
-            <div className={`mt-4 ${isMobile ? 'mt-4 text-center' : 'mt-0 ml-6 text-left'}`}>
+            <div className={`${isMobile ? 'mt-4 text-center w-full' : 'mt-0 ml-6 text-left'}`}>
               <h4 className="text-xl font-bold">{displayProfile.name}</h4>
               <p className="text-gray-600 dark:text-gray-400">
                 {displayProfile.age} years, {displayProfile.gender}
@@ -132,7 +138,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
       
       <ProfileEdit 
         open={editModalOpen} 
-        onClose={() => setEditModalOpen(false)}
+        onClose={handleEditClose}
       />
     </AnimatedTransition>
   );
