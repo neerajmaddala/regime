@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Combine the data into a UserProfile object
       let userProfile: UserProfile = {
-        name: profileData.name || 'User',
+        name: profileData.name || user?.email?.split('@')[0] || 'User',
         age: profileData.age || 30,
         weight: profileData.weight || 70,
         height: profileData.height || 170,
