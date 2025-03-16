@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
-import { Meal, MealItem, mealTypeIcons } from '@/lib/data';
-import { Calendar, Plus, ChevronRight, X, Trash2, PlusCircle, Info } from 'lucide-react';
+import { Meal, MealItem, mealTypeIcons, extendedFoodDatabase } from '@/lib/data';
+import { Calendar, Plus, ChevronRight, X, Trash2, PlusCircle, Info, Filter, Search } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -42,18 +42,9 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals: initialMeals }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{mealId: string, itemId: string} | null>(null);
   const [activeTab, setActiveTab] = useState('mealPlan');
-  const [foodDatabase, setFoodDatabase] = useState([
-    { id: '1', name: 'Apple', calories: 95, protein: 0.5, carbs: 25, fat: 0.3, portion: '1 medium' },
-    { id: '2', name: 'Chicken Breast', calories: 165, protein: 31, carbs: 0, fat: 3.6, portion: '100g' },
-    { id: '3', name: 'Brown Rice', calories: 215, protein: 5, carbs: 45, fat: 1.8, portion: '1 cup cooked' },
-    { id: '4', name: 'Avocado', calories: 234, protein: 2.9, carbs: 12.5, fat: 21, portion: '1 medium' },
-    { id: '5', name: 'Salmon', calories: 206, protein: 22, carbs: 0, fat: 13, portion: '100g' },
-    { id: '6', name: 'Broccoli', calories: 55, protein: 3.7, carbs: 11.2, fat: 0.6, portion: '1 cup' },
-    { id: '7', name: 'Greek Yogurt', calories: 100, protein: 17, carbs: 6, fat: 0.4, portion: '100g' },
-    { id: '8', name: 'Almonds', calories: 164, protein: 6, carbs: 6, fat: 14, portion: '1/4 cup' },
-    { id: '9', name: 'Banana', calories: 105, protein: 1.3, carbs: 27, fat: 0.4, portion: '1 medium' },
-    { id: '10', name: 'Egg', calories: 68, protein: 5.5, carbs: 0.6, fat: 4.8, portion: '1 large' },
-  ]);
+  const [foodDatabase, setFoodDatabase] = useState(extendedFoodDatabase);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const isMobile = useIsMobile();
   
@@ -66,6 +57,16 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals: initialMeals }) => {
       fat: 0,
       portion: '1 serving'
     }
+  });
+
+  // Get all unique categories from the food database
+  const foodCategories = Array.from(new Set(foodDatabase.map(item => item.category))).sort();
+
+  // Filter food database based on search term and category
+  const filteredFoodDatabase = foodDatabase.filter(food => {
+    const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory ? food.category === selectedCategory : true;
+    return matchesSearch && matchesCategory;
   });
 
   // Calculate daily targets based on sample profile
@@ -219,7 +220,8 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals: initialMeals }) => {
       protein: foodItem.protein,
       carbs: foodItem.carbs,
       fat: foodItem.fat,
-      portion: foodItem.portion
+      portion: foodItem.portion,
+      image: foodItem.image
     };
     
     // Update the meals state with the new item
@@ -412,32 +414,96 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals: initialMeals }) => {
                       Food Database
                     </h4>
                     
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
-                          <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Calories</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Protein</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Carbs</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fat</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Portion</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-regime-dark-light divide-y divide-gray-200 dark:divide-gray-700">
-                          {foodDatabase.map((food) => (
-                            <tr key={food.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{food.name}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{food.calories}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{food.protein}g</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{food.carbs}g</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{food.fat}g</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{food.portion}</td>
-                            </tr>
+                    {/* Search and filter */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                        <Input 
+                          placeholder="Search foods..." 
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                      <div className="md:w-1/3">
+                        <select 
+                          className="w-full p-2 rounded border border-gray-200 dark:border-gray-700 focus:ring focus:ring-regime-green focus:ring-opacity-50"
+                          value={selectedCategory || ''}
+                          onChange={(e) => setSelectedCategory(e.target.value || null)}
+                        >
+                          <option value="">All Categories</option>
+                          {foodCategories.map(category => (
+                            <option key={category} value={category}>{category}</option>
                           ))}
-                        </tbody>
-                      </table>
+                        </select>
+                      </div>
                     </div>
+                    
+                    {/* Food grid layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredFoodDatabase.map(food => (
+                        <div key={food.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                          <div className="h-36 overflow-hidden bg-gray-100">
+                            {food.image ? (
+                              <img 
+                                src={food.image} 
+                                alt={food.name} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                <Info size={24} className="text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h5 className="font-medium text-lg">{food.name}</h5>
+                                <p className="text-xs text-gray-500">{food.portion}</p>
+                              </div>
+                              <span className="px-2 py-1 bg-regime-green-light text-regime-green-dark rounded text-xs">
+                                {food.category}
+                              </span>
+                            </div>
+                            <div className="mt-2 flex justify-between text-sm">
+                              <span>{food.calories} cal</span>
+                              <div className="flex space-x-2 text-xs text-gray-500">
+                                <span>P: {food.protein}g</span>
+                                <span>C: {food.carbs}g</span>
+                                <span>F: {food.fat}g</span>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <select 
+                                className="w-full p-1.5 text-sm border rounded focus:ring focus:ring-regime-green focus:ring-opacity-50"
+                                onChange={(e) => {
+                                  const mealId = e.target.value;
+                                  if (mealId) {
+                                    handleAddFromDatabase(food, mealId);
+                                    e.target.value = "";
+                                  }
+                                }}
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Add to meal...</option>
+                                {meals.map(meal => (
+                                  <option key={meal.id} value={meal.id}>
+                                    {mealTypeLabels[meal.type]}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {filteredFoodDatabase.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">No foods found matching your criteria.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>
