@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Loader2 } from 'lucide-react';
 
 interface ProfileEditProps {
   open: boolean;
@@ -27,7 +28,8 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
   useEffect(() => {
     if (profile && open) {
       console.log("Setting form data to current profile:", profile);
-      setFormData({ ...profile });
+      // Create a deep copy to avoid references
+      setFormData(JSON.parse(JSON.stringify(profile)));
     }
   }, [profile, open]);
 
@@ -128,15 +130,18 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
 
       if (goalError) throw goalError;
 
-      // Ensure the profile is refreshed from the database
-      await refreshProfile();
-      
       toast({
         title: "Profile updated",
         description: "Your profile and goals have been updated successfully",
       });
       
-      onClose();
+      // Wait for the database to process the changes
+      setTimeout(async () => {
+        // Ensure the profile is refreshed from the database
+        await refreshProfile();
+        onClose();
+      }, 500);
+      
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
@@ -355,11 +360,18 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
       </div>
       
       <div className="flex justify-end gap-3 pt-4">
-        <Button variant="outline" type="button" onClick={onClose}>
+        <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
           Cancel
         </Button>
         <Button type="submit" className="bg-regime-green text-white" disabled={loading}>
-          {loading ? 'Saving...' : 'Save Changes'}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Changes'
+          )}
         </Button>
       </div>
     </form>

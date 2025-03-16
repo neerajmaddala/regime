@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import { UserProfile } from '@/lib/data';
-import { User, Target, BarChart3, Weight, Ruler, Activity } from 'lucide-react';
+import { User, Target, Activity, Weight, Ruler, RefreshCw } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import ProfileEdit from '@/components/ProfileEdit';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 interface ProfileSetupProps {
   userProfile?: UserProfile;
@@ -17,6 +18,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
   const { profile, refreshProfile } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [localProfile, setLocalProfile] = useState<UserProfile | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
 
   // Use the passed userProfile prop if available, otherwise use the profile from auth context
@@ -28,6 +30,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
     setEditModalOpen(false);
     // Refresh the profile data after the modal is closed
     await refreshProfile();
+  };
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshProfile();
+    setIsRefreshing(false);
   };
 
   if (!localProfile) {
@@ -49,7 +57,19 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
       <Card variant="glass" className="p-0 overflow-hidden">
         <div className="flex flex-col">
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Profile</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Profile</h2>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleManualRefresh}
+                className="flex items-center gap-1 text-gray-600 hover:text-green-700"
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </Button>
+            </div>
             
             <div className="bg-white dark:bg-regime-dark-light rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-6">
@@ -67,20 +87,26 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
                   {localProfile.age} years, {localProfile.gender}
                 </p>
                 
-                <div className="flex flex-col gap-2 w-full max-w-xs">
-                  <div className="flex items-center justify-center gap-2">
-                    <Weight size={18} className="text-gray-500" />
-                    <span>{localProfile.weight} kg</span>
+                <div className="flex flex-wrap justify-center gap-6 w-full max-w-xs mb-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                      <Weight size={18} className="text-gray-500" />
+                    </div>
+                    <span className="text-sm font-medium">{localProfile.weight} kg</span>
                   </div>
                   
-                  <div className="flex items-center justify-center gap-2">
-                    <Ruler size={18} className="text-gray-500" />
-                    <span>{localProfile.height} cm</span>
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                      <Ruler size={18} className="text-gray-500" />
+                    </div>
+                    <span className="text-sm font-medium">{localProfile.height} cm</span>
                   </div>
                   
-                  <div className="flex items-center justify-center gap-2">
-                    <Activity size={18} className="text-gray-500" />
-                    <span className="capitalize">{localProfile.activityLevel.replace('-', ' ')} Activity</span>
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                      <Activity size={18} className="text-gray-500" />
+                    </div>
+                    <span className="text-sm font-medium capitalize">{localProfile.activityLevel.replace('-', ' ')}</span>
                   </div>
                 </div>
               </div>
@@ -91,45 +117,40 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
                   <h3 className="text-xl font-semibold">Your Goals</h3>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Goal Type</p>
+                    <p className="text-lg font-medium capitalize">{localProfile.goal.type.replace('-', ' ')}</p>
+                  </div>
+                  
                   <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Daily Calories</p>
-                    <p className="text-2xl font-bold">{localProfile.goal.targetCalories}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 capitalize">
-                      Goal: {localProfile.goal.type.replace('-', ' ')}
-                    </p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetCalories} kcal</p>
                   </div>
                   
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Macronutrients</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Protein</span>
-                        <span className="font-medium">{localProfile.goal.targetProtein}g</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Carbs</span>
-                        <span className="font-medium">{localProfile.goal.targetCarbs}g</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Fat</span>
-                        <span className="font-medium">{localProfile.goal.targetFat}g</span>
-                      </div>
-                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Water Target</p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetWater} ml</p>
                   </div>
                   
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Other Goals</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Water</span>
-                        <span className="font-medium">{localProfile.goal.targetWater}ml</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Exercise</span>
-                        <span className="font-medium">{localProfile.goal.targetExerciseDuration} min/day</span>
-                      </div>
-                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Protein</p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetProtein}g</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Carbs</p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetCarbs}g</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Fat</p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetFat}g</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Exercise Target</p>
+                    <p className="text-lg font-medium">{localProfile.goal.targetExerciseDuration} min/day</p>
                   </div>
                 </div>
               </div>

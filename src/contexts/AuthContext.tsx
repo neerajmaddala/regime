@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const { data: authListener } = supabase.auth.onAuthStateChange(
           async (_event, session) => {
+            console.log('Auth state changed:', _event, session?.user?.id);
             setSession(session);
             setUser(session?.user || null);
             
@@ -155,7 +156,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Refreshing profile requested');
     if (user) {
       console.log('Refreshing profile for user:', user.id);
+      // First clear the existing profile to avoid stale data
+      setProfile(null);
+      // Then fetch the updated profile
       await fetchProfile(user.id);
+      // Notify user of successful refresh
+      toast({
+        title: "Profile refreshed",
+        description: "Your profile data has been updated",
+      });
     }
   };
 

@@ -1,9 +1,10 @@
 
 import React from 'react';
 import Card from '@/components/common/Card';
-import { Droplet, Plus, Minus } from 'lucide-react';
+import { Droplet, Plus, Check } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import { WaterIntake } from '@/lib/data';
+import { toast } from '@/components/ui/use-toast';
 
 interface WaterTrackerProps {
   waterIntake: number;
@@ -20,6 +21,16 @@ const WaterTracker: React.FC<WaterTrackerProps> = ({
 }) => {
   const percentage = Math.min(Math.round((waterIntake / targetWater) * 100), 100);
   const remainingWater = targetWater - waterIntake;
+  
+  const handleAddWater = (amount: number) => {
+    onAddWater(amount);
+    // Show a toast notification
+    toast({
+      title: `Added ${amount}ml of water`,
+      description: `${remainingWater <= amount ? 'Daily target reached! 🎉' : `${remainingWater - amount}ml remaining`}`,
+      variant: "default"
+    });
+  };
 
   return (
     <AnimatedTransition type="slide-up" delay={200}>
@@ -63,18 +74,18 @@ const WaterTracker: React.FC<WaterTrackerProps> = ({
               
               <div className="flex items-center gap-2 mt-2">
                 <button 
-                  onClick={() => onAddWater(250)}
+                  onClick={() => handleAddWater(250)}
                   className="flex items-center justify-center bg-regime-blue hover:bg-regime-blue-light text-white p-3 rounded-full transition-all"
                 >
-                  <Plus size={18} />
+                  <Plus size={16} className="mr-1" />
                   <span className="ml-1">250ml</span>
                 </button>
                 
                 <button 
-                  onClick={() => onAddWater(500)}
+                  onClick={() => handleAddWater(500)}
                   className="flex items-center justify-center bg-regime-blue hover:bg-regime-blue-light text-white p-3 rounded-full transition-all"
                 >
-                  <Plus size={18} />
+                  <Plus size={16} className="mr-1" />
                   <span className="ml-1">500ml</span>
                 </button>
               </div>
@@ -86,11 +97,11 @@ const WaterTracker: React.FC<WaterTrackerProps> = ({
             <h4 className="font-medium text-sm text-gray-600 dark:text-gray-300 mb-2">
               Today's intake
             </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               {completedIntakes.map((intake, index) => (
                 <AnimatedTransition key={intake.id} type="fade" delay={100 + (index * 50)}>
                   <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 p-2 rounded">
-                    <Droplet size={16} className="text-regime-blue mr-2" />
+                    <Check size={16} className="text-regime-blue mr-2" />
                     <div className="text-sm">
                       <span className="font-medium">{intake.amount}ml</span>
                       <span className="text-gray-500 dark:text-gray-400 ml-1">

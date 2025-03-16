@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { mockDailyProgress, mockWeeklyProgressData, mockUserProfile } from '@/lib/data';
+import { toast } from '@/components/ui/use-toast';
 
 export const useProgressData = () => {
   const [dailyData, setDailyData] = useState(mockDailyProgress);
@@ -38,11 +39,15 @@ export const useProgressData = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Simulate data update for demo purposes
+  // Update water intake
   const updateWaterIntake = (amount: number) => {
+    const previousIntake = dailyData.waterIntake;
+    const newIntake = previousIntake + amount;
+    const targetWater = userProfile.goal.targetWater;
+    
     setDailyData(prev => ({
       ...prev,
-      waterIntake: prev.waterIntake + amount,
+      waterIntake: newIntake,
       completedWaterIntakes: [
         ...prev.completedWaterIntakes,
         {
@@ -52,6 +57,19 @@ export const useProgressData = () => {
         }
       ]
     }));
+    
+    // Show a toast notification based on the progress
+    if (previousIntake < targetWater && newIntake >= targetWater) {
+      toast({
+        title: "Water goal achieved! 🎉",
+        description: `You've reached your daily water intake goal of ${targetWater}ml`,
+      });
+    } else if (newIntake >= targetWater * 1.5) {
+      toast({
+        title: "Outstanding! 💧",
+        description: `You're exceeding your water goal by 50%. Keep it up!`,
+      });
+    }
   };
 
   return {

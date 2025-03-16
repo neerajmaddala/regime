@@ -2,14 +2,24 @@
 import React, { useState } from 'react';
 import Card from '@/components/common/Card';
 import { Meal, MealItem, mealTypeIcons } from '@/lib/data';
-import { Calendar, Plus, ChevronRight, X } from 'lucide-react';
+import { Calendar, Plus, ChevronRight, X, Trash2 } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MealPlannerProps {
   meals: Meal[];
@@ -27,6 +37,8 @@ interface AddFoodFormValues {
 const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
   const [currentMeal, setCurrentMeal] = useState<Meal | null>(null);
   const [addFoodDialogOpen, setAddFoodDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{mealId: string, itemId: string} | null>(null);
   const isMobile = useIsMobile();
   
   const form = useForm<AddFoodFormValues>({
@@ -52,12 +64,34 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
     setAddFoodDialogOpen(true);
   };
 
+  const handleDeleteFoodClick = (mealId: string, itemId: string) => {
+    setItemToDelete({ mealId, itemId });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteFood = () => {
+    if (!itemToDelete) return;
+    
+    // In a real app, this would call an API to delete the item
+    // For now, just show a toast notification
+    toast({
+      title: "Food item deleted",
+      description: "The food item has been removed from your meal plan",
+    });
+    
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
+
   const onSubmit = (values: AddFoodFormValues) => {
     if (!currentMeal) return;
     
     // Here you would typically send this data to your backend
     // For now we'll just show a toast notification
-    toast.success(`Added ${values.name} to ${mealTypeLabels[currentMeal.type]}`);
+    toast({
+      title: "Food added",
+      description: `Added ${values.name} to ${mealTypeLabels[currentMeal.type]}`,
+    });
     
     // Reset form and close dialog
     form.reset();
@@ -120,13 +154,23 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
                               <p className="text-sm text-gray-500 dark:text-gray-400">{item.portion}</p>
                             </div>
                             
-                            <div className="text-left sm:text-right">
-                              <p className="font-medium">{item.calories} cal</p>
-                              <div className="flex space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span>P: {item.protein}g</span>
-                                <span>C: {item.carbs}g</span>
-                                <span>F: {item.fat}g</span>
+                            <div className="text-left sm:text-right flex flex-row items-center justify-between sm:block">
+                              <div>
+                                <p className="font-medium">{item.calories} cal</p>
+                                <div className="flex space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                                  <span>P: {item.protein}g</span>
+                                  <span>C: {item.carbs}g</span>
+                                  <span>F: {item.fat}g</span>
+                                </div>
                               </div>
+                              
+                              <button 
+                                className="text-gray-400 hover:text-red-500 transition-colors p-1 sm:mt-1"
+                                onClick={() => handleDeleteFoodClick(meal.id, item.id)}
+                                aria-label="Delete food item"
+                              >
+                                <Trash2 size={18} />
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -158,6 +202,7 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
         </Card>
       </AnimatedTransition>
 
+      {/* Add Food Dialog */}
       <Dialog open={addFoodDialogOpen} onOpenChange={setAddFoodDialogOpen}>
         <DialogContent className={`sm:max-w-[425px] ${isMobile ? 'p-4' : ''}`}>
           <DialogHeader>
@@ -248,6 +293,25 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ meals }) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Food Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Food Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this food item from your meal plan?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFood} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
