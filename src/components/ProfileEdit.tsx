@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -135,13 +134,8 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
         description: "Your profile and goals have been updated successfully",
       });
       
-      // Wait for the database to process the changes
-      setTimeout(async () => {
-        // Ensure the profile is refreshed from the database
-        await refreshProfile();
-        onClose();
-      }, 500);
-      
+      // Close the modal immediately after success
+      onClose();
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
@@ -154,7 +148,6 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
     }
   };
 
-  // Common form content to avoid duplication
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-6 mt-6">
       <div className="space-y-4">
@@ -377,7 +370,6 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
     </form>
   );
 
-  // Return either mobile sheet or desktop dialog based on device
   return isMobile ? (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="overflow-y-auto">

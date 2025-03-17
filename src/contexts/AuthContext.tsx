@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -51,6 +50,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         );
 
+        if (data.session?.user) {
+          const userId = data.session.user.id;
+          
+          const profileChannel = supabase
+            .channel('profile-changes')
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'profiles',
+                filter: `id=eq.${userId}`
+              },
+              () => {
+                console.log('Profile data changed in realtime');
+                fetchProfile(userId);
+              }
+            )
+            .subscribe();
+            
+          const goalsChannel = supabase
+            .channel('goals-changes')
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'user_goals',
+                filter: `user_id=eq.${userId}`
+              },
+              () => {
+                console.log('Goals data changed in realtime');
+                fetchProfile(userId);
+              }
+            )
+            .subscribe();
+            
+          return () => {
+            authListener.subscription.unsubscribe();
+            supabase.removeChannel(profileChannel);
+            supabase.removeChannel(goalsChannel);
+          };
+        }
+
         return () => {
           authListener.subscription.unsubscribe();
         };
@@ -67,10 +110,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
-      // Clear any previous state to avoid stale data
       setLoading(true);
       
-      // First, get the profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -82,7 +123,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw profileError;
       }
 
-      // Then, get the goals data
       const { data: goalsData, error: goalsError } = await supabase
         .from('user_goals')
         .select('*')
@@ -97,13 +137,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Profile data fetched:', profileData);
       console.log('Goals data fetched:', goalsData);
 
-      // Ensure gender is one of the allowed values
       const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
       const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
-      // Ensure goal type is one of the allowed values
       const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
       
-      // Combine the data into a UserProfile object
       let userProfile: UserProfile = {
         name: profileData.name || user?.email?.split('@')[0] || 'User',
         age: profileData.age || 30,
@@ -127,7 +164,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Error fetching profile:', error);
       
-      // If no profile exists, create default values
       const defaultProfile: UserProfile = {
         name: user?.email?.split('@')[0] || 'User',
         age: 30,
@@ -156,15 +192,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Refreshing profile requested');
     if (user) {
       console.log('Refreshing profile for user:', user.id);
-      // First clear the existing profile to avoid stale data
-      setProfile(null);
-      // Then fetch the updated profile
-      await fetchProfile(user.id);
-      // Notify user of successful refresh
-      toast({
-        title: "Profile refreshed",
-        description: "Your profile data has been updated",
-      });
+      try {
+        setLoading(true);
+        
+        setProfile(null);
+        
+        await fetchProfile(user.id);
+        
+        toast({
+          title: "Profile refreshed",
+          description: "Your profile data has been updated",
+        });
+      } catch (error) {
+        console.error('Error refreshing profile:', error);
+        toast({
+          title: "Error refreshing profile",
+          description: "Failed to refresh profile data",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

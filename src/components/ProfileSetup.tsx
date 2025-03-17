@@ -34,8 +34,11 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    await refreshProfile();
-    setIsRefreshing(false);
+    try {
+      await refreshProfile();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (!localProfile) {
