@@ -20,14 +20,14 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
 
-  // Use the passed userProfile prop if available, otherwise use the profile from auth context
   useEffect(() => {
+    console.log("Profile from auth context updated:", profile);
     setLocalProfile(userProfile || profile);
   }, [userProfile, profile]);
 
   const handleEditClose = async () => {
     setEditModalOpen(false);
-    // No need to explicitly refresh profile after edit since we have real-time updates now
+    await refreshProfile();
   };
 
   const handleManualRefresh = async () => {

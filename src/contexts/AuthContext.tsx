@@ -54,7 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (data.session?.user) {
           const userId = data.session.user.id;
           
-          // Subscribe to real-time changes for the current user's profile data
+          // Set up realtime subscription for profile changes
+          // We're using separate channels with specific filters to only get updates for the current user
           const profileChannel = supabase
             .channel('profile-changes')
             .on(
@@ -70,9 +71,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 fetchProfile(userId);
               }
             )
-            .subscribe();
+            .subscribe((status) => {
+              console.log('Profile subscription status:', status);
+            });
             
-          // Subscribe to real-time changes for the current user's goals data
+          // Set up realtime subscription for goals changes
           const goalsChannel = supabase
             .channel('goals-changes')
             .on(
@@ -88,7 +91,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 fetchProfile(userId);
               }
             )
-            .subscribe();
+            .subscribe((status) => {
+              console.log('Goals subscription status:', status);
+            });
             
           return () => {
             authListener.subscription.unsubscribe();
