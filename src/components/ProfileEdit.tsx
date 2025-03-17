@@ -2,16 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserProfile, GoalType } from '@/lib/data';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2 } from 'lucide-react';
+import PersonalInfoForm from '@/components/profile/PersonalInfoForm';
+import GoalsForm from '@/components/profile/GoalsForm';
+import { calculateNutritionValues } from '@/utils/profileCalculations';
 
 interface ProfileEditProps {
   open: boolean;
@@ -52,113 +52,6 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
         [name]: name === 'type' ? value : Number(value),
       },
     }));
-  };
-
-  // Function to calculate recommended nutrition values based on goal type
-  const calculateNutritionValues = (goalType: GoalType, user: UserProfile) => {
-    const { weight, height, age, gender, activityLevel } = user;
-    
-    // Calculate BMR using Mifflin-St Jeor Equation
-    let bmr;
-    if (gender === 'male') {
-      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-    } else {
-      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-    }
-    
-    // Apply activity level multiplier
-    let activityMultiplier;
-    switch (activityLevel) {
-      case 'sedentary':
-        activityMultiplier = 1.2;
-        break;
-      case 'light':
-        activityMultiplier = 1.375;
-        break;
-      case 'moderate':
-        activityMultiplier = 1.55;
-        break;
-      case 'active':
-        activityMultiplier = 1.725;
-        break;
-      case 'very-active':
-        activityMultiplier = 1.9;
-        break;
-      default:
-        activityMultiplier = 1.55; // Default to moderate
-    }
-    
-    let maintenanceCalories = Math.round(bmr * activityMultiplier);
-    let calories, protein, carbs, fat;
-    
-    // Adjust based on goal type
-    switch (goalType) {
-      case 'weight-loss':
-        calories = Math.round(maintenanceCalories * 0.8); // 20% deficit
-        protein = Math.round(weight * 2.2); // Higher protein for weight loss
-        fat = Math.round((calories * 0.25) / 9); // 25% of calories from fat
-        carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4); // Remainder from carbs
-        break;
-      case 'muscle-gain':
-        calories = Math.round(maintenanceCalories * 1.1); // 10% surplus
-        protein = Math.round(weight * 1.8); // High protein for muscle gain
-        fat = Math.round((calories * 0.25) / 9); // 25% of calories from fat
-        carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4); // Remainder from carbs
-        break;
-      case 'maintenance':
-        calories = maintenanceCalories;
-        protein = Math.round(weight * 1.6); // Moderate protein
-        fat = Math.round((calories * 0.3) / 9); // 30% of calories from fat
-        carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4); // Remainder from carbs
-        break;
-      case 'health':
-        calories = maintenanceCalories;
-        protein = Math.round(weight * 1.4); // Moderate protein
-        fat = Math.round((calories * 0.3) / 9); // 30% of calories from fat
-        carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4); // Remainder from carbs
-        break;
-      default:
-        calories = maintenanceCalories;
-        protein = Math.round(weight * 1.6);
-        fat = Math.round((calories * 0.3) / 9);
-        carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
-    }
-    
-    // Calculate water intake based on weight (in ml)
-    const water = Math.round(weight * 35); // 35ml per kg of body weight
-    
-    // Calculate exercise duration based on goal
-    let exerciseDuration;
-    switch (goalType) {
-      case 'weight-loss':
-        exerciseDuration = 60; // More exercise for weight loss
-        break;
-      case 'muscle-gain':
-        exerciseDuration = 45; // Moderate exercise for muscle gain
-        break;
-      case 'maintenance':
-        exerciseDuration = 30; // Standard exercise for maintenance
-        break;
-      case 'health':
-        exerciseDuration = 45; // Moderate exercise for health
-        break;
-      default:
-        exerciseDuration = 30;
-    }
-    
-    // Ensure values are reasonable
-    carbs = Math.max(50, carbs); // Minimum 50g carbs
-    protein = Math.max(50, protein); // Minimum 50g protein
-    fat = Math.max(30, fat); // Minimum 30g fat
-    
-    return {
-      targetCalories: calories,
-      targetProtein: protein,
-      targetCarbs: carbs,
-      targetFat: fat,
-      targetWater: water,
-      targetExerciseDuration: exerciseDuration
-    };
   };
 
   const handleSelectChange = (value: string, field: string) => {
@@ -273,207 +166,17 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Personal Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
-            <Select
-              value={formData.gender}
-              onValueChange={(value) => handleSelectChange(value, 'gender')}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="age">Age</Label>
-            <Input
-              id="age"
-              name="age"
-              type="number"
-              value={formData.age}
-              onChange={handleChange}
-              min={1}
-              max={120}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="weight">Weight (kg)</Label>
-            <Input
-              id="weight"
-              name="weight"
-              type="number"
-              value={formData.weight}
-              onChange={handleChange}
-              min={20}
-              max={300}
-              step={0.1}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="height">Height (cm)</Label>
-            <Input
-              id="height"
-              name="height"
-              type="number"
-              value={formData.height}
-              onChange={handleChange}
-              min={50}
-              max={250}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="activityLevel">Activity Level</Label>
-            <Select
-              value={formData.activityLevel}
-              onValueChange={(value) => handleSelectChange(value, 'activityLevel')}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select activity level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sedentary">Sedentary</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="very-active">Very Active</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
+      <PersonalInfoForm 
+        formData={formData}
+        handleChange={handleChange}
+        handleSelectChange={handleSelectChange}
+      />
       
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Your Goals</h3>
-        <div className="space-y-2">
-          <Label htmlFor="goalType">Goal Type</Label>
-          <Select
-            value={formData.goal.type}
-            onValueChange={(value) => handleSelectChange(value, 'goalType')}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select goal type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weight-loss">Weight Loss</SelectItem>
-              <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-              <SelectItem value="health">Overall Health</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="targetCalories">Daily Calories</Label>
-            <Input
-              id="targetCalories"
-              name="targetCalories"
-              type="number"
-              value={formData.goal.targetCalories}
-              onChange={handleGoalChange}
-              min={500}
-              max={5000}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="targetProtein">Protein (g)</Label>
-            <Input
-              id="targetProtein"
-              name="targetProtein"
-              type="number"
-              value={formData.goal.targetProtein}
-              onChange={handleGoalChange}
-              min={10}
-              max={400}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="targetCarbs">Carbs (g)</Label>
-            <Input
-              id="targetCarbs"
-              name="targetCarbs"
-              type="number"
-              value={formData.goal.targetCarbs}
-              onChange={handleGoalChange}
-              min={10}
-              max={600}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="targetFat">Fat (g)</Label>
-            <Input
-              id="targetFat"
-              name="targetFat"
-              type="number"
-              value={formData.goal.targetFat}
-              onChange={handleGoalChange}
-              min={10}
-              max={200}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="targetWater">Water (ml)</Label>
-            <Input
-              id="targetWater"
-              name="targetWater"
-              type="number"
-              value={formData.goal.targetWater}
-              onChange={handleGoalChange}
-              min={500}
-              max={5000}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="targetExerciseDuration">Exercise (min/day)</Label>
-            <Input
-              id="targetExerciseDuration"
-              name="targetExerciseDuration"
-              type="number"
-              value={formData.goal.targetExerciseDuration}
-              onChange={handleGoalChange}
-              min={0}
-              max={240}
-              required
-            />
-          </div>
-        </div>
-      </div>
+      <GoalsForm 
+        formData={formData}
+        handleGoalChange={handleGoalChange}
+        handleSelectChange={handleSelectChange}
+      />
       
       <div className="flex justify-end gap-3 pt-4">
         <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
