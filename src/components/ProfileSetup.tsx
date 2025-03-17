@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import { UserProfile } from '@/lib/data';
@@ -28,8 +27,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
 
   const handleEditClose = async () => {
     setEditModalOpen(false);
-    // Refresh the profile data after the modal is closed
-    await refreshProfile();
+    // No need to explicitly refresh profile after edit since we have real-time updates now
   };
 
   const handleManualRefresh = async () => {

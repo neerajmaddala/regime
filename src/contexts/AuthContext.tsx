@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (data.session?.user) {
           const userId = data.session.user.id;
           
+          // Subscribe to real-time changes for the current user's profile data
           const profileChannel = supabase
             .channel('profile-changes')
             .on(
@@ -63,13 +65,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 table: 'profiles',
                 filter: `id=eq.${userId}`
               },
-              () => {
-                console.log('Profile data changed in realtime');
+              (payload) => {
+                console.log('Profile data changed in realtime:', payload);
                 fetchProfile(userId);
               }
             )
             .subscribe();
             
+          // Subscribe to real-time changes for the current user's goals data
           const goalsChannel = supabase
             .channel('goals-changes')
             .on(
@@ -80,8 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 table: 'user_goals',
                 filter: `user_id=eq.${userId}`
               },
-              () => {
-                console.log('Goals data changed in realtime');
+              (payload) => {
+                console.log('Goals data changed in realtime:', payload);
                 fetchProfile(userId);
               }
             )
@@ -137,10 +140,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Profile data fetched:', profileData);
       console.log('Goals data fetched:', goalsData);
 
+      // Ensure valid values for gender, activity level, and goal type
       const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
       const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
       const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
       
+      // Construct the user profile with fetched data
       let userProfile: UserProfile = {
         name: profileData.name || user?.email?.split('@')[0] || 'User',
         age: profileData.age || 30,
@@ -164,6 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Error fetching profile:', error);
       
+      // Fall back to default profile if there's an error
       const defaultProfile: UserProfile = {
         name: user?.email?.split('@')[0] || 'User',
         age: 30,
@@ -195,8 +201,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setLoading(true);
         
+        // Clear current profile before fetching to indicate refresh is happening
         setProfile(null);
         
+        // Fetch fresh data
         await fetchProfile(user.id);
         
         toast({
