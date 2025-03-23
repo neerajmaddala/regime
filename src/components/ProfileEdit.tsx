@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -37,10 +36,25 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev!,
-      [name]: name === 'age' || name === 'weight' || name === 'height' ? Number(value) : value,
-    }));
+    const newValue = name === 'age' || name === 'weight' || name === 'height' ? Number(value) : value;
+    
+    setFormData((prev) => {
+      const updatedFormData = {
+        ...prev!,
+        [name]: newValue,
+      };
+      
+      // Recalculate nutrition values if weight/height/age changes
+      if (name === 'weight' || name === 'height' || name === 'age') {
+        const newNutritionValues = calculateNutritionValues(updatedFormData.goal.type, updatedFormData);
+        updatedFormData.goal = {
+          ...updatedFormData.goal,
+          ...newNutritionValues
+        };
+      }
+      
+      return updatedFormData;
+    });
   };
 
   const handleGoalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,15 +93,37 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ open, onClose }) => {
         description: `Your nutrition plan has been adjusted for ${goalType.replace('-', ' ')}`,
       });
     } else if (field === 'gender') {
-      setFormData((prev) => ({
-        ...prev!,
-        gender: value as 'male' | 'female' | 'other',
-      }));
+      setFormData((prev) => {
+        const updatedFormData = {
+          ...prev!,
+          gender: value as 'male' | 'female' | 'other',
+        };
+        
+        // Recalculate nutrition values when gender changes
+        const newNutritionValues = calculateNutritionValues(updatedFormData.goal.type, updatedFormData);
+        updatedFormData.goal = {
+          ...updatedFormData.goal,
+          ...newNutritionValues
+        };
+        
+        return updatedFormData;
+      });
     } else if (field === 'activityLevel') {
-      setFormData((prev) => ({
-        ...prev!,
-        activityLevel: value as 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active',
-      }));
+      setFormData((prev) => {
+        const updatedFormData = {
+          ...prev!,
+          activityLevel: value as 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active',
+        };
+        
+        // Recalculate nutrition values when activity level changes
+        const newNutritionValues = calculateNutritionValues(updatedFormData.goal.type, updatedFormData);
+        updatedFormData.goal = {
+          ...updatedFormData.goal,
+          ...newNutritionValues
+        };
+        
+        return updatedFormData;
+      });
     }
   };
 
