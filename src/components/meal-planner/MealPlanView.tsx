@@ -1,31 +1,20 @@
 
 import React from 'react';
-import { Meal, MealItem, mealTypeIcons } from '@/lib/data';
+import { mealTypeIcons } from '@/lib/data';
 import { Trash2, Plus } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
+import { useMealPlanner } from '@/contexts/MealPlannerContext';
 
-interface MealPlanViewProps {
-  meals: Meal[];
-  onAddFoodClick: (meal: Meal) => void;
-  onDeleteFoodClick: (mealId: string, itemId: string) => void;
-  onAddFromDatabase: (foodItem: any, mealId: string) => void;
-  foodDatabase: any[];
-}
+const MealPlanView: React.FC = () => {
+  const { 
+    meals, 
+    handleAddFoodClick, 
+    handleDeleteFoodClick,
+    handleAddFromDatabase,
+    foodDatabase,
+    mealTypeLabels
+  } = useMealPlanner();
 
-const mealTypeLabels = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  dinner: 'Dinner',
-  snack: 'Snack'
-};
-
-const MealPlanView: React.FC<MealPlanViewProps> = ({ 
-  meals, 
-  onAddFoodClick, 
-  onDeleteFoodClick,
-  onAddFromDatabase,
-  foodDatabase
-}) => {
   return (
     <div className="space-y-6">
       {meals.map((meal, index) => {
@@ -85,7 +74,7 @@ const MealPlanView: React.FC<MealPlanViewProps> = ({
                       
                       <button 
                         className="text-gray-400 hover:text-red-500 transition-colors p-1 sm:mt-1"
-                        onClick={() => onDeleteFoodClick(meal.id, item.id)}
+                        onClick={() => handleDeleteFoodClick(meal.id, item.id)}
                         aria-label="Delete food item"
                       >
                         <Trash2 size={18} />
@@ -97,7 +86,7 @@ const MealPlanView: React.FC<MealPlanViewProps> = ({
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button 
                     className="flex items-center text-sm font-medium text-regime-green hover:text-regime-green-dark transition-colors"
-                    onClick={() => onAddFoodClick(meal)}
+                    onClick={() => handleAddFoodClick(meal)}
                   >
                     <Plus size={16} className="mr-1" /> Add custom food
                   </button>
@@ -110,7 +99,7 @@ const MealPlanView: React.FC<MealPlanViewProps> = ({
                         if (foodId) {
                           const food = foodDatabase.find(f => f.id === foodId);
                           if (food) {
-                            onAddFromDatabase(food, meal.id);
+                            handleAddFromDatabase(food, meal.id);
                           }
                           e.target.value = ""; // Reset select after selection
                         }
