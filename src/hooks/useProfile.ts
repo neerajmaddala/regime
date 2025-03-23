@@ -35,7 +35,10 @@ export async function fetchUserProfile(userId: string, setLoading?: (loading: bo
 
     const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
     const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
-    const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
+    
+    // Fix: Add type assertion to ensure goalType is recognized as a valid GoalType
+    const goalType = goalsData?.type || 'weight-loss';
+    const validGoalType = goalType as GoalType;
     
     const userProfile: UserProfile = {
       name: profileData.name || '',
