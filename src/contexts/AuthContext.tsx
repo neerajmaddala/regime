@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -54,8 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (data.session?.user) {
           const userId = data.session.user.id;
           
-          // Set up realtime subscription for profile changes
-          // We're using separate channels with specific filters to only get updates for the current user
           const profileChannel = supabase
             .channel('profile-changes')
             .on(
@@ -75,7 +72,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               console.log('Profile subscription status:', status);
             });
             
-          // Set up realtime subscription for goals changes
           const goalsChannel = supabase
             .channel('goals-changes')
             .on(
@@ -145,12 +141,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Profile data fetched:', profileData);
       console.log('Goals data fetched:', goalsData);
 
-      // Ensure valid values for gender, activity level, and goal type
       const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
       const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
       const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
       
-      // Construct the user profile with fetched data
       let userProfile: UserProfile = {
         name: profileData.name || user?.email?.split('@')[0] || 'User',
         age: profileData.age || 30,
@@ -171,10 +165,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setProfile(userProfile);
       console.log('Profile set to:', userProfile);
+      return userProfile;
     } catch (error) {
       console.error('Error fetching profile:', error);
       
-      // Fall back to default profile if there's an error
       const defaultProfile: UserProfile = {
         name: user?.email?.split('@')[0] || 'User',
         age: 30,
@@ -194,6 +188,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       
       setProfile(defaultProfile);
+      return defaultProfile;
     } finally {
       setLoading(false);
     }
@@ -206,23 +201,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setLoading(true);
         
-        // Clear current profile before fetching to indicate refresh is happening
-        setProfile(null);
+        const { data: cacheResetResult } = await supabase.rpc('version');
+        console.log('Cache reset result:', cacheResetResult);
         
-        // Fetch fresh data
-        await fetchProfile(user.id);
+        const updatedProfile = await fetchProfile(user.id);
         
-        toast({
-          title: "Profile refreshed",
-          description: "Your profile data has been updated",
-        });
+        console.log('Profile refreshed successfully:', updatedProfile);
+        return updatedProfile;
       } catch (error) {
         console.error('Error refreshing profile:', error);
-        toast({
-          title: "Error refreshing profile",
-          description: "Failed to refresh profile data",
-          variant: "destructive",
-        });
+        throw error;
       } finally {
         setLoading(false);
       }

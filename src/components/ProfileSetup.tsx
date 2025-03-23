@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface ProfileSetupProps {
   userProfile?: UserProfile;
@@ -22,18 +23,30 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
 
   useEffect(() => {
     console.log("Profile from auth context updated:", profile);
-    setLocalProfile(userProfile || profile);
+    if (userProfile || profile) {
+      setLocalProfile(userProfile || profile);
+    }
   }, [userProfile, profile]);
 
   const handleEditClose = async () => {
     setEditModalOpen(false);
-    await refreshProfile();
+    try {
+      await refreshProfile();
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error refreshing profile after edit:", error);
+      toast.error("Failed to refresh profile");
+    }
   };
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     try {
       await refreshProfile();
+      toast.success("Profile refreshed successfully");
+    } catch (error) {
+      console.error("Error manually refreshing profile:", error);
+      toast.error("Failed to refresh profile");
     } finally {
       setIsRefreshing(false);
     }

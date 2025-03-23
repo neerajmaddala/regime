@@ -1,10 +1,14 @@
+
 import React from 'react';
 import Card from '@/components/common/Card';
 import { Meal } from '@/lib/data';
 import { Calendar } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MealPlannerProvider } from '@/contexts/MealPlannerContext';
+import { MealPlannerProvider, useMealPlanner } from '@/contexts/MealPlannerContext';
+import MealPlannerContent from '@/components/meal-planner/MealPlannerContent';
+import AddFoodDialog from '@/components/meal-planner/AddFoodDialog';
+import DeleteFoodDialog from '@/components/meal-planner/DeleteFoodDialog';
 
 interface MealPlannerProps {
   meals: Meal[];
