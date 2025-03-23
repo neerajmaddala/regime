@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,7 @@ type AuthContextType = {
   profile: UserProfile | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: () => Promise<UserProfile | void>; // Updated return type to match implementation
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -143,6 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
       const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
+      // Fix line 204 - Use type assertion to handle the string type
       const validGoalType = (goalsData?.type || 'weight-loss') as GoalType;
       
       let userProfile: UserProfile = {
