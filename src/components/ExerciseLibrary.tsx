@@ -4,6 +4,7 @@ import Card from '@/components/common/Card';
 import { Exercise, exerciseCategoryIcons } from '@/lib/data';
 import { Dumbbell, Search, Clock, Flame, ChevronRight } from 'lucide-react';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
+import { useExerciseTimer } from '@/hooks/useExerciseTimer';
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
@@ -12,6 +13,7 @@ interface ExerciseLibraryProps {
 const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const { openExerciseTimer, ExerciseTimerComponent } = useExerciseTimer();
   
   const categories = [
     { id: 'all', label: 'All' },
@@ -27,6 +29,12 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
                           exercise.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleStartExercise = (exercise: Exercise) => {
+    // Convert duration from minutes to seconds for the timer
+    const durationInSeconds = exercise.duration * 60;
+    openExerciseTimer(exercise.name, durationInSeconds);
+  };
 
   return (
     <AnimatedTransition type="slide-up" delay={300}>
@@ -114,7 +122,10 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
                           </div>
                         </div>
                         
-                        <button className="flex items-center justify-center text-sm font-medium text-regime-green hover:text-regime-green-dark transition-colors">
+                        <button 
+                          onClick={() => handleStartExercise(exercise)}
+                          className="flex items-center justify-center text-sm font-medium text-regime-green hover:text-regime-green-dark transition-colors"
+                        >
                           Start <ChevronRight size={16} className="ml-1" />
                         </button>
                       </div>
@@ -126,6 +137,9 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises }) => {
           </div>
         </div>
       </Card>
+      
+      {/* Exercise Timer Modal */}
+      <ExerciseTimerComponent />
     </AnimatedTransition>
   );
 };

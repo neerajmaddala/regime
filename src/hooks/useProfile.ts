@@ -39,13 +39,15 @@ export async function fetchUserProfile(userId: string, setLoading?: (loading: bo
     // Fix: Make sure the goal type is correctly typed as a GoalType
     // We need to ensure that the type from the database is one of the valid GoalType values
     const goalTypeFromDB = goalsData?.type || 'weight-loss';
-    // Define valid goal types using a type assertion to fix the 'never' type error
-    const validGoalTypes = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
+    
+    // Define valid goal types explicitly
+    const validGoalTypes: readonly GoalType[] = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
+    
     // Check if the goalTypeFromDB is one of our valid types, otherwise default to weight-loss
-    const isValidGoalType = validGoalTypes.includes(goalTypeFromDB as any);
-    const validGoalType: GoalType = isValidGoalType 
-      ? goalTypeFromDB as GoalType 
-      : 'weight-loss';
+    const validGoalType: GoalType = 
+      (validGoalTypes as readonly string[]).includes(goalTypeFromDB) 
+        ? goalTypeFromDB as GoalType 
+        : 'weight-loss';
     
     const userProfile: UserProfile = {
       name: profileData.name || '',
