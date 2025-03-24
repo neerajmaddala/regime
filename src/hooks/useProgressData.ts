@@ -8,10 +8,19 @@ export const useProgressData = () => {
   const [weeklyData, setWeeklyData] = useState(mockWeeklyProgressData);
   const [userProfile, setUserProfile] = useState(mockUserProfile);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(Date.now());
+
+  // Force a refresh when meals change
+  const refreshDashboard = () => {
+    setLastUpdated(Date.now());
+  };
 
   // Calculate progress percentages
   const calculateProgress = () => {
-    const { caloriesConsumed, waterIntake } = dailyData;
+    // Get updated calories consumed (recalculated on every render)
+    const caloriesConsumed = dailyData.meals.reduce((total, meal) => total + meal.totalCalories, 0);
+    
+    const { waterIntake } = dailyData;
     const { targetCalories, targetWater } = userProfile.goal;
     
     return {
@@ -23,7 +32,9 @@ export const useProgressData = () => {
   };
 
   const getRemainingCalories = () => {
-    return userProfile.goal.targetCalories - dailyData.caloriesConsumed + dailyData.caloriesBurned;
+    // Get updated calories consumed (recalculated on every render)
+    const caloriesConsumed = dailyData.meals.reduce((total, meal) => total + meal.totalCalories, 0);
+    return userProfile.goal.targetCalories - caloriesConsumed + dailyData.caloriesBurned;
   };
 
   const getRemainingWater = () => {
@@ -70,6 +81,8 @@ export const useProgressData = () => {
         description: `You're exceeding your water goal by 50%. Keep it up!`,
       });
     }
+    
+    refreshDashboard();
   };
 
   return {
@@ -80,6 +93,7 @@ export const useProgressData = () => {
     progress: calculateProgress(),
     remainingCalories: getRemainingCalories(),
     remainingWater: getRemainingWater(),
-    updateWaterIntake
+    updateWaterIntake,
+    refreshDashboard
   };
 };

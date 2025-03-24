@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Meal, MealItem, extendedFoodDatabase } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
 
@@ -74,6 +74,12 @@ export const MealPlannerProvider: React.FC<{
   const [foodDatabase] = useState(extendedFoodDatabase);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [currentNutrition, setCurrentNutrition] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+  });
   
   // Get all unique categories from the food database
   const foodCategories = Array.from(new Set(foodDatabase.map(item => item.category))).sort();
@@ -93,6 +99,11 @@ export const MealPlannerProvider: React.FC<{
     snack: 'Snack'
   };
 
+  // Calculate current nutrition from meals whenever meals change
+  useEffect(() => {
+    calculateCurrentNutrition();
+  }, [meals]);
+
   // Calculate current nutrition from meals
   const calculateCurrentNutrition = () => {
     let totalCalories = 0;
@@ -109,15 +120,13 @@ export const MealPlannerProvider: React.FC<{
       });
     });
     
-    return {
+    setCurrentNutrition({
       calories: Math.round(totalCalories),
       protein: Math.round(totalProtein),
       carbs: Math.round(totalCarbs),
       fat: Math.round(totalFat)
-    };
+    });
   };
-
-  const currentNutrition = calculateCurrentNutrition();
 
   const handleAddFoodClick = (meal: Meal) => {
     setCurrentMeal(meal);
@@ -136,22 +145,22 @@ export const MealPlannerProvider: React.FC<{
     setMeals(currentMeals => 
       currentMeals.map(meal => {
         if (meal.id === itemToDelete.mealId) {
+          // Filter out the deleted item
+          const updatedItems = meal.items.filter(item => item.id !== itemToDelete.itemId);
+          
+          // Recalculate meal totals
+          const totalCalories = updatedItems.reduce((sum, item) => sum + item.calories, 0);
+          const totalProtein = updatedItems.reduce((sum, item) => sum + item.protein, 0);
+          const totalCarbs = updatedItems.reduce((sum, item) => sum + item.carbs, 0);
+          const totalFat = updatedItems.reduce((sum, item) => sum + item.fat, 0);
+          
           return {
             ...meal,
-            items: meal.items.filter(item => item.id !== itemToDelete.itemId),
-            // Recalculate meal totals
-            totalCalories: meal.items
-              .filter(item => item.id !== itemToDelete.itemId)
-              .reduce((sum, item) => sum + item.calories, 0),
-            totalProtein: meal.items
-              .filter(item => item.id !== itemToDelete.itemId)
-              .reduce((sum, item) => sum + item.protein, 0),
-            totalCarbs: meal.items
-              .filter(item => item.id !== itemToDelete.itemId)
-              .reduce((sum, item) => sum + item.carbs, 0),
-            totalFat: meal.items
-              .filter(item => item.id !== itemToDelete.itemId)
-              .reduce((sum, item) => sum + item.fat, 0)
+            items: updatedItems,
+            totalCalories,
+            totalProtein,
+            totalCarbs,
+            totalFat
           };
         }
         return meal;
@@ -186,14 +195,19 @@ export const MealPlannerProvider: React.FC<{
       currentMeals.map(meal => {
         if (meal.id === currentMeal.id) {
           const updatedItems = [...meal.items, newItem];
+          // Recalculate meal totals
+          const totalCalories = updatedItems.reduce((sum, item) => sum + item.calories, 0);
+          const totalProtein = updatedItems.reduce((sum, item) => sum + item.protein, 0);
+          const totalCarbs = updatedItems.reduce((sum, item) => sum + item.carbs, 0);
+          const totalFat = updatedItems.reduce((sum, item) => sum + item.fat, 0);
+          
           return {
             ...meal,
             items: updatedItems,
-            // Recalculate meal totals
-            totalCalories: updatedItems.reduce((sum, item) => sum + item.calories, 0),
-            totalProtein: updatedItems.reduce((sum, item) => sum + item.protein, 0),
-            totalCarbs: updatedItems.reduce((sum, item) => sum + item.carbs, 0),
-            totalFat: updatedItems.reduce((sum, item) => sum + item.fat, 0)
+            totalCalories,
+            totalProtein,
+            totalCarbs,
+            totalFat
           };
         }
         return meal;
@@ -231,14 +245,19 @@ export const MealPlannerProvider: React.FC<{
       currentMeals.map(meal => {
         if (meal.id === mealId) {
           const updatedItems = [...meal.items, newItem];
+          // Recalculate meal totals
+          const totalCalories = updatedItems.reduce((sum, item) => sum + item.calories, 0);
+          const totalProtein = updatedItems.reduce((sum, item) => sum + item.protein, 0);
+          const totalCarbs = updatedItems.reduce((sum, item) => sum + item.carbs, 0);
+          const totalFat = updatedItems.reduce((sum, item) => sum + item.fat, 0);
+          
           return {
             ...meal,
             items: updatedItems,
-            // Recalculate meal totals
-            totalCalories: updatedItems.reduce((sum, item) => sum + item.calories, 0),
-            totalProtein: updatedItems.reduce((sum, item) => sum + item.protein, 0),
-            totalCarbs: updatedItems.reduce((sum, item) => sum + item.carbs, 0),
-            totalFat: updatedItems.reduce((sum, item) => sum + item.fat, 0)
+            totalCalories,
+            totalProtein,
+            totalCarbs,
+            totalFat
           };
         }
         return meal;

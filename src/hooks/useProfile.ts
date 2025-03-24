@@ -41,11 +41,12 @@ export async function fetchUserProfile(userId: string, setLoading?: (loading: bo
     const goalTypeFromDB = goalsData?.type || 'weight-loss';
     
     // Define valid goal types explicitly
-    const validGoalTypes: readonly GoalType[] = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
+    const validGoalTypes = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
     
     // Check if the goalTypeFromDB is one of our valid types, otherwise default to weight-loss
+    // Use type assertion to avoid TypeScript errors
     const validGoalType: GoalType = 
-      (validGoalTypes as readonly string[]).includes(goalTypeFromDB) 
+      validGoalTypes.includes(goalTypeFromDB as any) 
         ? goalTypeFromDB as GoalType 
         : 'weight-loss';
     

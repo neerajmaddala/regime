@@ -1,5 +1,7 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { useProgressData } from '@/hooks/useProgressData';
+import { useMealPlanner } from '@/contexts/MealPlannerContext';
 import { toast } from 'sonner';
 import WaterTracker from '@/components/WaterTracker';
 import MealPlanner from '@/components/MealPlanner';
@@ -35,6 +37,9 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
     updateWaterIntake,
     remainingWater
   } = useProgressData();
+  
+  // Get currentNutrition from MealPlannerContext to ensure real-time updates
+  const { currentNutrition, meals } = useMealPlanner();
 
   const handleAddWater = (amount: number) => {
     updateWaterIntake(amount);
@@ -70,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
         return (
           <div className="max-w-5xl mx-auto py-8">
             <h1 className="text-3xl font-bold mb-6">Meal Planning</h1>
-            <MealPlanner meals={dailyData.meals} />
+            <MealPlanner meals={meals} />
           </div>
         );
       case 'exercises':
@@ -118,7 +123,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">Calories Remaining</span>
-                      <h3 className="text-2xl font-bold mt-1">{remainingCalories}</h3>
+                      <h3 className="text-2xl font-bold mt-1">{userProfile.goal.targetCalories - currentNutrition.calories}</h3>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-regime-green/20 flex items-center justify-center">
                       <Utensils size={18} className="text-regime-green-dark" />
@@ -128,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-regime-green rounded-full h-2 transition-all duration-1000 ease-out"
-                        style={{ width: `${progress.calories}%` }}
+                        style={{ width: `${Math.min((currentNutrition.calories / userProfile.goal.targetCalories) * 100, 100)}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between mt-1 text-xs text-gray-600 dark:text-gray-400">
@@ -171,7 +176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
                     <div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">Protein</span>
                       <h3 className="text-2xl font-bold mt-1">
-                        {dailyData.meals.reduce((acc, meal) => acc + meal.totalProtein, 0)}g
+                        {currentNutrition.protein}g
                       </h3>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
@@ -182,7 +187,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-purple-600 dark:bg-purple-400 rounded-full h-2 transition-all duration-1000 ease-out"
-                        style={{ width: `${progress.protein}%` }}
+                        style={{ width: `${Math.min((currentNutrition.protein / userProfile.goal.targetProtein) * 100, 100)}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between mt-1 text-xs text-gray-600 dark:text-gray-400">
@@ -224,7 +229,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <MealPlanner meals={dailyData.meals} />
+                <MealPlanner meals={meals} />
                 <ProgressChart data={weeklyData} />
               </div>
               
