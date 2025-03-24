@@ -47,7 +47,7 @@ export async function fetchUserProfile(userId: string, setLoading?: (loading: bo
     // Use type assertion to avoid TypeScript errors
     const validGoalType: GoalType = 
       validGoalTypes.includes(goalTypeFromDB as any) 
-        ? goalTypeFromDB as GoalType 
+        ? (goalTypeFromDB as GoalType)
         : 'weight-loss';
     
     const userProfile: UserProfile = {

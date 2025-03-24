@@ -11,6 +11,7 @@ import ProfileSetup from '@/components/ProfileSetup';
 import AnimatedTransition from '@/components/common/AnimatedTransition';
 import Card from '@/components/common/Card';
 import { mockExercises } from '@/lib/data';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Utensils, 
   Dumbbell, 
@@ -27,6 +28,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) => {
+  const { profile } = useAuth();
   const { 
     dailyData, 
     weeklyData, 
@@ -56,6 +58,9 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
       </div>
     );
   }
+  
+  // Get user's name from auth profile if available, otherwise from the userProfile
+  const userName = profile?.name || userProfile.name || 'User';
   
   const renderContent = () => {
     switch (activeSection) {
@@ -105,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
             <AnimatedTransition type="fade">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h1 className="text-3xl font-bold">Welcome back, {userProfile.name.split(' ')[0]}</h1>
+                  <h1 className="text-3xl font-bold">Welcome back, {userName.split(' ')[0]}</h1>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
                     Let's continue your wellness journey
                   </p>
