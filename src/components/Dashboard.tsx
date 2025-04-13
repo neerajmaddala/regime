@@ -12,6 +12,8 @@ import AnimatedTransition from '@/components/common/AnimatedTransition';
 import Card from '@/components/common/Card';
 import { mockExercises } from '@/lib/data';
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { 
   Utensils, 
   Dumbbell, 
@@ -20,7 +22,9 @@ import {
   ChevronRight, 
   TrendingUp, 
   Flame,
-  Calendar 
+  Calendar,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -28,7 +32,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) => {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { 
     dailyData, 
     weeklyData, 
@@ -61,6 +65,92 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection = 'dashboard' }) =>
   
   // Get user's name from auth profile if available, otherwise from the userProfile
   const userName = profile?.name || userProfile.name || 'User';
+
+  // If user is not logged in and viewing the main dashboard, show welcome screen with login options
+  if (!user && activeSection === 'dashboard') {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-4">
+        <AnimatedTransition type="fade">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Welcome to REGIME</h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              Your personal fitness journey starts here
+            </p>
+          </div>
+        </AnimatedTransition>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <AnimatedTransition type="slide-right">
+            <Card variant="glass" className="bg-white dark:bg-regime-dark-light p-8">
+              <h2 className="text-2xl font-bold mb-4">Have an account?</h2>
+              <p className="mb-6 text-gray-600 dark:text-gray-400">
+                Log in to access your personalized fitness plan, track your progress, and achieve your goals.
+              </p>
+              <Link to="/auth">
+                <Button className="w-full bg-regime-green hover:bg-regime-green-dark text-white">
+                  <LogIn className="mr-2" size={18} />
+                  Log In
+                </Button>
+              </Link>
+            </Card>
+          </AnimatedTransition>
+
+          <AnimatedTransition type="slide-left">
+            <Card variant="glass" className="bg-white dark:bg-regime-dark-light p-8">
+              <h2 className="text-2xl font-bold mb-4">New here?</h2>
+              <p className="mb-6 text-gray-600 dark:text-gray-400">
+                Create an account to get started with personalized meal plans, exercise routines, and progress tracking.
+              </p>
+              <Link to="/auth?tab=signup">
+                <Button className="w-full bg-regime-green hover:bg-regime-green-dark text-white">
+                  <UserPlus className="mr-2" size={18} />
+                  Sign Up
+                </Button>
+              </Link>
+            </Card>
+          </AnimatedTransition>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <AnimatedTransition type="slide-up" delay={100}>
+            <Card variant="glass" className="bg-white dark:bg-regime-dark-light p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-regime-green/20 flex items-center justify-center mx-auto mb-4">
+                <Utensils size={24} className="text-regime-green-dark" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Meal Planning</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Create personalized meal plans based on your nutritional goals
+              </p>
+            </Card>
+          </AnimatedTransition>
+
+          <AnimatedTransition type="slide-up" delay={200}>
+            <Card variant="glass" className="bg-white dark:bg-regime-dark-light p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4">
+                <Dumbbell size={24} className="text-regime-blue" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Exercise Tracking</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Follow workout routines designed to meet your fitness goals
+              </p>
+            </Card>
+          </AnimatedTransition>
+
+          <AnimatedTransition type="slide-up" delay={300}>
+            <Card variant="glass" className="bg-white dark:bg-regime-dark-light p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+                <TrendingUp size={24} className="text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Progress Tracking</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Monitor your progress over time with detailed charts and insights
+              </p>
+            </Card>
+          </AnimatedTransition>
+        </div>
+      </div>
+    );
+  }
   
   const renderContent = () => {
     switch (activeSection) {

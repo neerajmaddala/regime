@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Mail, Lock, User, ArrowRight, Phone } from 'lucide-react';
@@ -25,7 +25,13 @@ const Auth = () => {
   const [session, setSession] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
+
+  // Get tab from URL query params
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get('tab');
+  const defaultTab = tabParam === 'signup' ? 'signup' : 'login';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -160,7 +166,7 @@ const Auth = () => {
         </div>
         
         <div className="bg-white dark:bg-regime-dark-light rounded-xl shadow-lg overflow-hidden">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="login">Email Login</TabsTrigger>
               <TabsTrigger value="phone">Phone Login</TabsTrigger>
