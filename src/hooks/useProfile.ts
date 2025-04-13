@@ -1,14 +1,51 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, GoalType } from '@/lib/data';
+
+// Interface to match the database schema structure
+interface ProfileRecord {
+  id: string;
+  name: string;
+  gender?: 'male' | 'female' | 'other';
+  age?: number;
+  weight?: number;
+  height?: number;
+  activity_level?: string;
+  goal_type?: GoalType;
+  created_at?: string;
+  updated_at?: string;
+  avatar_url?: string;
+  daily_calorie_target?: number;
+  water_intake_goal?: number;
+}
+
+// Function to convert database record to UserProfile format
+const mapProfileRecordToUserProfile = (record: ProfileRecord): UserProfile => {
+  return {
+    name: record.name || 'New User',
+    age: record.age || 25,
+    weight: record.weight || 70,
+    height: record.height || 175,
+    gender: record.gender || 'male',
+    activityLevel: (record.activity_level as 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active') || 'moderate',
+    goal: {
+      type: (record.goal_type as GoalType) || 'weight-loss',
+      targetCalories: record.daily_calorie_target || 2000,
+      targetProtein: 150,
+      targetCarbs: 200,
+      targetFat: 55,
+      targetWater: record.water_intake_goal || 2500,
+      targetExerciseDuration: 45
+    }
+  };
+};
 
 // Function to create a default user profile
 export const createDefaultProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
-    const defaultProfile: Omit<UserProfile, 'id' | 'created_at'> = {
+    const defaultProfile: Omit<ProfileRecord, 'id' | 'created_at'> = {
       name: 'New User',
-      email: '',
-      avatar_url: '',
-      goal_type: 'general_fitness',
+      goal_type: 'weight-loss',
       age: 25,
       weight: 70,
       height: 175,
@@ -29,7 +66,7 @@ export const createDefaultProfile = async (userId: string): Promise<UserProfile 
       return null;
     }
 
-    return data as UserProfile;
+    return mapProfileRecordToUserProfile(data as ProfileRecord);
   } catch (error) {
     console.error('Error in createDefaultProfile:', error);
     return null;
@@ -55,7 +92,7 @@ export const refreshProfileData = async (userId: string): Promise<UserProfile | 
             return null;
         }
 
-        return data as UserProfile;
+        return mapProfileRecordToUserProfile(data as ProfileRecord);
     } catch (error) {
         console.error('Error in refreshProfileData:', error);
         return null;
@@ -64,7 +101,7 @@ export const refreshProfileData = async (userId: string): Promise<UserProfile | 
 
 // Function to check if a goal type is valid
 const isValidGoalType = (type: string): type is GoalType => {
-  return ['weight_loss', 'muscle_gain', 'maintenance', 'general_fitness'].includes(type as GoalType);
+  return ['weight-loss', 'muscle-gain', 'maintenance', 'health'].includes(type as GoalType);
 };
 
 // Function to fetch user profile
@@ -89,13 +126,15 @@ export const fetchUserProfile = async (userId: string, setLoading?: (loading: bo
       return await createDefaultProfile(userId);
     }
     
+    const profileRecord = profile as ProfileRecord;
+    
     // Type assertion for goal_type
-    if (profile.goal_type && !isValidGoalType(profile.goal_type)) {
-      console.warn(`Invalid goal type detected: ${profile.goal_type}, defaulting to 'general_fitness'`);
-      profile.goal_type = 'general_fitness';
+    if (profileRecord.goal_type && !isValidGoalType(profileRecord.goal_type)) {
+      console.warn(`Invalid goal type detected: ${profileRecord.goal_type}, defaulting to 'weight-loss'`);
+      profileRecord.goal_type = 'weight-loss';
     }
     
-    return profile as UserProfile;
+    return mapProfileRecordToUserProfile(profileRecord);
   } catch (error) {
     console.error('Error in fetchUserProfile:', error);
     return null;
