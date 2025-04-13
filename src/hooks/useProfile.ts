@@ -1,109 +1,105 @@
-
-import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, GoalType } from '@/lib/data';
 
-export async function fetchUserProfile(userId: string, setLoading?: (loading: boolean) => void): Promise<UserProfile | null> {
+// Function to create a default user profile
+export const createDefaultProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
-    console.log('Fetching profile for user:', userId);
+    const defaultProfile: Omit<UserProfile, 'id' | 'created_at'> = {
+      name: 'New User',
+      email: '',
+      avatar_url: '',
+      goal_type: 'general_fitness',
+      age: 25,
+      weight: 70,
+      height: 175,
+      gender: 'male',
+      activity_level: 'moderate',
+      daily_calorie_target: 2000,
+      water_intake_goal: 3000,
+    };
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert([{ id: userId, ...defaultProfile }])
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Error creating default profile:', error);
+      return null;
+    }
+
+    return data as UserProfile;
+  } catch (error) {
+    console.error('Error in createDefaultProfile:', error);
+    return null;
+  }
+};
+
+// Function to refresh profile data
+export const refreshProfileData = async (userId: string): Promise<UserProfile | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error) {
+            console.error('Error fetching profile:', error);
+            return null;
+        }
+
+        if (!data) {
+            console.log('No profile found');
+            return null;
+        }
+
+        return data as UserProfile;
+    } catch (error) {
+        console.error('Error in refreshProfileData:', error);
+        return null;
+    }
+};
+
+// Function to check if a goal type is valid
+const isValidGoalType = (type: string): type is GoalType => {
+  return ['weight_loss', 'muscle_gain', 'maintenance', 'general_fitness'].includes(type as GoalType);
+};
+
+// Function to fetch user profile
+export const fetchUserProfile = async (userId: string, setLoading?: (loading: boolean) => void): Promise<UserProfile | null> => {
+  try {
     if (setLoading) setLoading(true);
     
-    const { data: profileData, error: profileError } = await supabase
+    // Fetch profile from the database
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
-
-    if (profileError) {
-      console.error('Profile fetch error:', profileError);
-      throw profileError;
+    
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
     }
-
-    const { data: goalsData, error: goalsError } = await supabase
-      .from('user_goals')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (goalsError && goalsError.code !== 'PGRST116') {
-      console.error('Goals fetch error:', goalsError);
-      throw goalsError;
+    
+    if (!profile) {
+      console.log('No profile found, creating default profile');
+      return await createDefaultProfile(userId);
     }
-
-    console.log('Profile data fetched:', profileData);
-    console.log('Goals data fetched:', goalsData);
-
-    const validGender = (profileData.gender || 'male') as "male" | "female" | "other";
-    const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
     
-    // Define valid goal types
-    const validGoalTypes = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
+    // Type assertion for goal_type
+    if (profile.goal_type && !isValidGoalType(profile.goal_type)) {
+      console.warn(`Invalid goal type detected: ${profile.goal_type}, defaulting to 'general_fitness'`);
+      profile.goal_type = 'general_fitness';
+    }
     
-    // Get goal type from DB with fallback to 'weight-loss'
-    const goalTypeFromDB: string = goalsData?.type || 'weight-loss';
-    
-    // Check if the goalTypeFromDB is one of our valid types, otherwise default to weight-loss
-    const validGoalType: GoalType = 
-      (validGoalTypes as readonly string[]).includes(goalTypeFromDB) 
-        ? (goalTypeFromDB as GoalType)
-        : 'weight-loss';
-    
-    const userProfile: UserProfile = {
-      name: profileData.name || '',
-      age: profileData.age || 30,
-      weight: profileData.weight || 70,
-      height: profileData.height || 170,
-      gender: validGender,
-      activityLevel: validActivityLevel,
-      goal: {
-        type: validGoalType,
-        targetCalories: goalsData?.target_calories || 2000,
-        targetProtein: goalsData?.target_protein || 150,
-        targetCarbs: goalsData?.target_carbs || 200,
-        targetFat: goalsData?.target_fat || 60,
-        targetWater: goalsData?.target_water || 2500,
-        targetExerciseDuration: goalsData?.target_exercise_duration || 45
-      }
-    };
-
-    return userProfile;
+    return profile as UserProfile;
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    
-    const defaultProfile: UserProfile = {
-      name: '',
-      age: 30,
-      weight: 70,
-      height: 170,
-      gender: 'male',
-      activityLevel: 'moderate',
-      goal: {
-        type: 'weight-loss',
-        targetCalories: 2000,
-        targetProtein: 150,
-        targetCarbs: 200,
-        targetFat: 60,
-        targetWater: 2500,
-        targetExerciseDuration: 45
-      }
-    };
-    
-    return defaultProfile;
+    console.error('Error in fetchUserProfile:', error);
+    return null;
   } finally {
     if (setLoading) setLoading(false);
   }
-}
-
-export async function refreshProfileData(userId: string): Promise<UserProfile | null> {
-  try {
-    console.log('Refreshing profile for user:', userId);
-    
-    const { data: cacheResetResult } = await supabase.rpc('version');
-    console.log('Cache reset result:', cacheResetResult);
-    
-    return await fetchUserProfile(userId);
-  } catch (error) {
-    console.error('Error refreshing profile:', error);
-    throw error;
-  }
-}
+};
