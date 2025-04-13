@@ -1,14 +1,18 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  allowDemo?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowDemo = false }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isDemo = searchParams.get('demo') === 'true';
   
   if (loading) {
     return (
@@ -21,7 +25,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
   
-  if (!user) {
+  // Allow access if user is authenticated or if demo mode is enabled and the route allows demo access
+  if (!user && !(allowDemo && isDemo)) {
     return <Navigate to="/auth" replace />;
   }
   

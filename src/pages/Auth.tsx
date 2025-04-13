@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Mail, Lock, User, ArrowRight, Phone } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Phone, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -157,12 +156,26 @@ const Auth = () => {
     }
   };
 
+  const handleViewDemo = () => {
+    navigate('/?demo=true');
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-regime-dark to-regime-dark-light p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">REGIME</h1>
           <p className="text-gray-300">Your personal fitness journey begins here</p>
+        </div>
+        
+        <div className="mb-6">
+          <Button 
+            onClick={handleViewDemo} 
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            <Play className="mr-2 h-4 w-4" />
+            Try Demo - No Login Required
+          </Button>
         </div>
         
         <div className="bg-white dark:bg-regime-dark-light rounded-xl shadow-lg overflow-hidden">

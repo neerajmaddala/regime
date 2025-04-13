@@ -37,14 +37,14 @@ export async function fetchUserProfile(userId: string, setLoading?: (loading: bo
     const validActivityLevel = (profileData.activity_level || 'moderate') as "sedentary" | "light" | "moderate" | "active" | "very-active";
     
     // Define valid goal types
-    const validGoalTypes: readonly GoalType[] = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
+    const validGoalTypes = ['weight-loss', 'muscle-gain', 'maintenance', 'health'] as const;
     
     // Get goal type from DB with fallback to 'weight-loss'
     const goalTypeFromDB: string = goalsData?.type || 'weight-loss';
     
     // Check if the goalTypeFromDB is one of our valid types, otherwise default to weight-loss
     const validGoalType: GoalType = 
-      validGoalTypes.includes(goalTypeFromDB as GoalType) 
+      (validGoalTypes as readonly string[]).includes(goalTypeFromDB) 
         ? (goalTypeFromDB as GoalType)
         : 'weight-loss';
     

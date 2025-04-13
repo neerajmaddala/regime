@@ -36,22 +36,22 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<Index />} />
             <Route path="/meals" element={
-              <ProtectedRoute>
+              <ProtectedRoute allowDemo>
                 <Index />
               </ProtectedRoute>
             } />
             <Route path="/exercises" element={
-              <ProtectedRoute>
+              <ProtectedRoute allowDemo>
                 <Index />
               </ProtectedRoute>
             } />
             <Route path="/progress" element={
-              <ProtectedRoute>
+              <ProtectedRoute allowDemo>
                 <Index />
               </ProtectedRoute>
             } />
             <Route path="/water" element={
-              <ProtectedRoute>
+              <ProtectedRoute allowDemo>
                 <Index />
               </ProtectedRoute>
             } />
