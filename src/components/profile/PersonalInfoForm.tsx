@@ -25,9 +25,10 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <Input
             id="name"
             name="name"
-            value={formData.name}
+            value={formData.name || ''}
             onChange={handleChange}
             required
+            placeholder="Your name"
           />
         </div>
         
@@ -54,11 +55,12 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             id="age"
             name="age"
             type="number"
-            value={formData.age}
+            value={formData.age || ''}
             onChange={handleChange}
             min={1}
             max={120}
             required
+            placeholder="Your age"
           />
         </div>
         
@@ -68,12 +70,13 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             id="weight"
             name="weight"
             type="number"
-            value={formData.weight}
+            value={formData.weight || ''}
             onChange={handleChange}
             min={20}
             max={300}
             step={0.1}
             required
+            placeholder="Your weight in kg"
           />
         </div>
         
@@ -83,11 +86,12 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             id="height"
             name="height"
             type="number"
-            value={formData.height}
+            value={formData.height || ''}
             onChange={handleChange}
             min={50}
             max={250}
             required
+            placeholder="Your height in cm"
           />
         </div>
         

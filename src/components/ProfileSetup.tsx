@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import { UserProfile } from '@/lib/data';
@@ -63,7 +64,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ userProfile }) => {
   }
 
   const getFirstLetter = (name: string) => {
-    return name.charAt(0).toUpperCase();
+    return name && name.charAt(0).toUpperCase() || 'U';
   };
 
   return (

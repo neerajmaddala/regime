@@ -40,7 +40,7 @@ const mapProfileRecordToUserProfile = (record: ProfileRecord): UserProfile => {
   };
 };
 
-// Function to create a default user profile
+// Function to create a default profile
 export const createDefaultProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     const defaultProfile: Omit<ProfileRecord, 'id' | 'created_at'> = {
