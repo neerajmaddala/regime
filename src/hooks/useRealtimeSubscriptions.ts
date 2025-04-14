@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function useRealtimeSubscriptions(userId: string | undefined, onDataChange: () => void) {
   useEffect(() => {
@@ -20,6 +21,7 @@ export function useRealtimeSubscriptions(userId: string | undefined, onDataChang
         },
         (payload) => {
           console.log('Profile data changed in realtime:', payload);
+          toast.success('Profile updated successfully');
           onDataChange();
         }
       )
@@ -39,6 +41,7 @@ export function useRealtimeSubscriptions(userId: string | undefined, onDataChang
         },
         (payload) => {
           console.log('Goals data changed in realtime:', payload);
+          toast.success('Goals updated successfully');
           onDataChange();
         }
       )

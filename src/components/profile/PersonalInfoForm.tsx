@@ -4,6 +4,7 @@ import { UserProfile } from '@/lib/data';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormItem, FormLabel, FormControl, FormDescription, FormMessage, Form } from '@/components/ui/form';
 
 interface PersonalInfoFormProps {
   formData: UserProfile;
@@ -29,13 +30,14 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             onChange={handleChange}
             required
             placeholder="Your name"
+            className="w-full"
           />
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
           <Select
-            value={formData.gender}
+            value={formData.gender || ''}
             onValueChange={(value) => handleSelectChange(value, 'gender')}
           >
             <SelectTrigger>
@@ -45,6 +47,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               <SelectItem value="male">Male</SelectItem>
               <SelectItem value="female">Female</SelectItem>
               <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -98,7 +101,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="activityLevel">Activity Level</Label>
           <Select
-            value={formData.activityLevel}
+            value={formData.activityLevel || ''}
             onValueChange={(value) => handleSelectChange(value, 'activityLevel')}
           >
             <SelectTrigger>
@@ -112,6 +115,17 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               <SelectItem value="very-active">Very Active</SelectItem>
             </SelectContent>
           </Select>
+          <FormDescription className="text-xs text-gray-500 mt-1">
+            Sedentary: Little to no exercise
+            <br />
+            Light: Light exercise 1-3 days/week
+            <br />
+            Moderate: Moderate exercise 3-5 days/week
+            <br />
+            Active: Hard exercise 6-7 days/week
+            <br />
+            Very Active: Very hard exercise or physical job
+          </FormDescription>
         </div>
       </div>
     </div>
